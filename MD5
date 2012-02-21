@@ -1,8 +1,8 @@
-9efcdee10c49bf3bf1f817c8543bf12c *DESCRIPTION
+6697739424d197afaa12766884a313de *DESCRIPTION
 17e7a0d0094cd59a540785c6416ec7c7 *NAMESPACE
-455c57055529b59e3bb3759f74363def *R/class_definition.R
+4aee5cd28e6a0c01a52002824ee36d90 *R/class_definition.R
 b1df51f34da0619e0d7f2e3c180af82c *R/countBamInGranges.R
-f56f99fe30df9f6c93d42c2d5acc483a *R/optimize_reference_set.R
+d7b916150a680878e9bb8eb0e481f086 *R/optimize_reference_set.R
 3053f847829498dd2c7b2cbe266b3ee7 *R/plot_CNVs_method.R
 5c6ac1dbad02c8a38b665eac51ced06f *R/tools.R
 6490e64fdc1f3062c4f758754866213a *R/zzz.R
@@ -11,8 +11,8 @@ f56f99fe30df9f6c93d42c2d5acc483a *R/optimize_reference_set.R
 a746ad8e8aeb9f096e0ab2c6a4d9f1b1 *data/datalist
 60d73853c76196b1fd944536a527db28 *data/exons.hg19.RData
 17ada08f2862f1bcd40a03df049702c2 *data/exons.hg19.X.RData
-1b576e069b0a88c4adf8f2fadaac1ebf *inst/doc/ExomeDepth-vignette.Rnw
-30b2eb2267ae5b8489e0fca42deb2240 *inst/doc/ExomeDepth-vignette.pdf
+55b3fa1e80eb5510a7c9c110650abeef *inst/doc/ExomeDepth-vignette.Rnw
+67094146e3cab4bbb93b67938185e427 *inst/doc/ExomeDepth-vignette.pdf
 d93ecfa4323f419e6ed4f57393d9555a *man/AnnotateExtra-methods.Rd
 5bab7e749cb4eff6ce7cd18e609255c9 *man/AnnotateExtra.Rd
 dc4830d53e1e95aeefb12f168152bc52 *man/CallCNVs.Rd
