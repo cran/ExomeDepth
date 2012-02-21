@@ -70,13 +70,11 @@ getBamCounts <- function(bed.frame = NULL, bed.file = NULL, bam.files, min.mapq 
   target <- GRanges(seqnames = bed.frame$seqnames,  
                     IRanges(start=bed.frame$start+1,end=bed.frame$end))
   
-                                        #if (exomeCopy) {target <- subdivideGRanges(target)}  ##exomeCopy recommends some splitting
-  
   rdata <- RangedData(space=seqnames(target),
                       ranges=ranges(target))
 
   if  ((ncol(bed.frame) >= 4) && (class(bed.frame[,4]) %in% c('character', 'factor'))) {    
-    row.names(rdata) <- make.unique(bed.frame[,4])  ##add exon names if available
+    row.names(rdata) <- make.unique(as.character(bed.frame[,4]))  ##add exon names if available
   }
   
 ############################################################################# add GC content

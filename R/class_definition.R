@@ -21,6 +21,7 @@ setMethod("initialize", "ExomeDepth", function(.Object,
                                                reference,
                                                formula = 'cbind(test, reference) ~ 1',
                                                phi.bins = 1,
+                                               prop.tumor = 1,
                                                subset.for.speed = NULL) {
   if (length(test) != length(reference)) stop("Length of test and numeric must match")
 
@@ -67,7 +68,7 @@ setMethod("initialize", "ExomeDepth", function(.Object,
       .Object@phi <- data$phi.linear
     }
   
-  print(summary(mod))
+  #print(summary(mod))
   .Object@formula <- formula
   .Object@test <- test
   .Object@reference <- reference
@@ -77,12 +78,14 @@ setMethod("initialize", "ExomeDepth", function(.Object,
   .Object@annotations <- data.frame()
   
   message('Now computing the likelihood for the different copy number states')
+  if (prop.tumor < 1) message('Proportion of tumor DNA is ', prop.tumor)
   #save(list = '.Object', file = 'debug.RData')
   .Object@likelihood <- .Call("get_loglike_matrix",
                               phi = .Object@phi,
                               expected = .Object@expected,
                               total = as.integer(.Object@reference + .Object@test),
-                              observed = as.integer(.Object@test))
+                              observed = as.integer(.Object@test),
+                              mixture = prop.tumor)
   .Object
 })
 
@@ -104,29 +107,6 @@ setMethod("show", "ExomeDepth", function(object) {
 
 #############################################################################
 
-
-#############################################################################
-#if (!isGeneric("ComputeLikelihood")) {
-#  if (is.function("ComputeLikelihood"))
-#    fun <- ComputeLikelihood
-#  else fun <- function(object) standardGeneric("ComputeLikelihood")
-#  setGeneric("ComputeLikelihood", fun)
-#}
-
-#setMethod("ComputeLikelihood", "ExomeDepth", function(object) {  
-#  object@likelihood <- .Call("get_loglike_matrix",
-#                        phi = object@phi,
-#                        expected = object@expected,
-#                        total = as.integer(object@reference + object@test),
-#                        observed = as.integer(object@test),
-#                        PACKAGE = 'ExoDepth')
-#  dimnames(object@likelihood)[[2]] <- c('loglike.del', 'loglike.normal', 'loglike.dup')
-#  object
-#})
-
-#############################################################################
-
-#############################################################################
 setGeneric("TestCNV", def = function(x, chromosome, start, end, type) standardGeneric('TestCNV'))
 
 setMethod("TestCNV", "ExomeDepth", function(x, chromosome, start, end, type) {
@@ -222,3 +202,24 @@ setMethod("CallCNVs", "ExomeDepth", function( x, chromosome, start, end, name, t
 
 })
 
+
+somatic.CNV.call <- function(normal, tumor, prop.tumor = 1, chromosome, start, end, names) {
+
+  message('Initializing the exomeDepth object')
+  myTest <- new('ExomeDepth',
+                test= tumor,
+                reference = normal,
+                prop.tumor = prop.tumor,
+                formula = 'cbind(test, reference) ~ 1')
+
+  message('Now calling the CNVs')
+  myTest <- CallCNVs(x = myTest,
+                     transition.probability = 10^-4,
+                     chromosome = chromosome,
+                     start = start,
+                     end = end,
+                     name = names)
+  
+ return (myTest)
+}
+ 

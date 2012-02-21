@@ -13,7 +13,7 @@ using namespace std;
  
 extern "C" {
   SEXP CNV_estimate (const SEXP expected_a, const SEXP total_a, const SEXP observed_a);
-  SEXP get_loglike_matrix (const SEXP phi_a, const SEXP expected_a, const SEXP total_a, const SEXP observed_a);
+  SEXP get_loglike_matrix (const SEXP phi_a, const SEXP expected_a, const SEXP total_a, const SEXP observed_a, const SEXP mixture_a);
   SEXP dbetabin_ab_vp (const SEXP x_a, const SEXP size_a, const SEXP shape1_a, const SEXP shape2_a);
 }
 
@@ -49,18 +49,22 @@ double myprob ( const double expected, const double sd_lambda, const int total, 
   return (gsl_sf_lnbeta (a1 + observed, a2 + total - observed)- gsl_sf_lnbeta (a1, a2));
 }
 
-SEXP get_loglike_matrix (const SEXP phi_a, const SEXP expected_a, const SEXP total_a, const SEXP observed_a) {
+SEXP get_loglike_matrix (const SEXP phi_a, const SEXP expected_a, const SEXP total_a, const SEXP observed_a, const SEXP mixture_a) {
 
   const double * expected = REAL( expected_a );
   const int * total = INTEGER( total_a );
   const int * observed = INTEGER( observed_a );
   const unsigned int nCNVs = length( total_a );
   const double * phi = REAL( phi_a );
+  const double mixture = REAL( mixture_a )[ 0 ];
 
-  
+  if (mixture != 1) {Rprintf("As a warning (this could be normal), the mixture coefficient is %f\n", mixture);}
   
 
   //----------------------------------------
+  double odds_del = 1 - 0.5*mixture;
+  double odds_dup = 1 + 0.5*mixture;
+
   SEXP ans;
   PROTECT(ans = allocMatrix(REALSXP, nCNVs, 3));  //matrix of probabilities for 1,2,3 cn
   double * rans = REAL(ans);
@@ -68,9 +72,9 @@ SEXP get_loglike_matrix (const SEXP phi_a, const SEXP expected_a, const SEXP tot
 
     double bestSd = sqrt(phi[ cnv ]*expected[ cnv ]*(1.-expected[ cnv ]));
     
-    rans[cnv + nCNVs*0] =   myprob ( expected[ cnv ]*0.5/ ( expected[ cnv ]*0.5 +  1- expected[ cnv ] ), bestSd, total[ cnv ], observed[ cnv]);
+    rans[cnv + nCNVs*0] =   myprob ( expected[ cnv ]*odds_del/ ( expected[ cnv ]*odds_del + 1 - expected[ cnv ] ), bestSd, total[ cnv ], observed[ cnv]);
     rans[cnv + nCNVs*1] =   myprob ( expected[ cnv ], bestSd, total[ cnv ], observed[ cnv]);
-    rans[cnv + nCNVs*2] =   myprob ( expected[ cnv ]*1.5/ ( expected[ cnv ]*1.5 +  1- expected[ cnv ] )  , bestSd, total[ cnv ], observed[ cnv]);
+    rans[cnv + nCNVs*2] =   myprob ( expected[ cnv ]*odds_dup/ ( expected[ cnv ]*odds_dup + 1 - expected[ cnv ] )  , bestSd, total[ cnv ], observed[ cnv]);
   }
   UNPROTECT(1);
   

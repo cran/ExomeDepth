@@ -26,6 +26,7 @@ Vincent Plagnol
 Maintainer: Vincent Plagnol <v.plagnol@ucl.ac.uk>
 }
 \references{
-  Paper recently submitted
+  A robust model for read count data in exome sequencing experiments and
+  implications for copy number variant calling, Bioinformatics, In Press
 }
 \keyword{ package }

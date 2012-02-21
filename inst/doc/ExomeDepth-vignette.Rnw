@@ -14,7 +14,33 @@
 
 \tableofcontents
 
+\section{What ExomeDepth does and tips for QC}
 
+\subsection{What ExomeDepth does and does not do}
+
+ExomeDepth uses read depth data to call CNVs from exome sequencing experiments.
+A key idea is that the test exome should be compared to a matched aggregate reference set.
+This aggregate reference set should combine exomes from the same batch and it should also be optimized for each exome.
+It will certainly differ from one exome to the next.
+
+Importantly, ExomeDepth assumes that the CNV of interest is absent from the aggregate reference set.
+Hence related individuals should be excluded from the aggregate reference.
+It also means that ExomeDepth can miss common CNVs, if the call is also present in the aggregate reference.
+ExomeDepth is really suited to detect rare CNV calls (typically for rare Mendelian disorder analysis).
+
+The ideas used in this package are of course not specific to exome sequencing and could be applied to other targeted sequencing datasets, as long as they contain a sufficiently large number of exons to estimate the parameters (at least 20 genes, say, but probably more would be useful).
+Also note that PCR based enrichment studies are often not well suited for this type of read depth analysis.
+The reason is that as the number of cycles is often set to a high number in order to equalize the representation of each amplicon, which can discard the CNV information.
+
+
+\subsection{Useful quality checks}
+Just to give some general expectations I usually obtain 150-280 CNV calls per exome sample (two third of them deletions).
+Any number clearly outside of this range is suspicious and suggests that either the model was inappropriate or that something went wrong while running the code.
+Less important and less precise, I also expect the aggregate reference to contain 5-10 exome samples. 
+While there is no set rule for this number, and the code may work very well with fewer exomes in the aggregate reference set, numbers outside of this range suggest potential technical artifacts.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Create count data from BAM files}
 
 Firstly, to facilitate the generation of read count data,  exon positions for the hg19 build of the human genome are available within \texttt{ExomeDepth}.
@@ -52,11 +78,11 @@ Here is how this object could for example be used to obtain a more generic data 
 <<Rsamtools.load>>=
 library(ExomeDepth)
 data(ExomeCount)
-ExomeCount <- as(ExomeCount[,  colnames(ExomeCount)], 'data.frame')
-ExomeCount$chromosome <- gsub(as.character(ExomeCount$space), 
-                              pattern = 'chr', 
-                              replacement = '')  ##remove the annoying chr letters
-print(head(ExomeCount))
+ExomeCount.dafr <- as(ExomeCount[,  colnames(ExomeCount)], 'data.frame')
+ExomeCount.dafr$chromosome <- gsub(as.character(ExomeCount.dafr$space), 
+                                        pattern = 'chr', 
+                                        replacement = '')  ##remove the annoying chr letters
+print(head(ExomeCount.dafr))
 @ 
 
 
@@ -69,10 +95,10 @@ Note the use of the subset.for.speed option that subsets some rows purely to spe
 
 <<first.test>>=
 test <- new('ExomeDepth',
-            test = ExomeCount$Exome2,
-            reference = ExomeCount$Exome3,
+            test = ExomeCount.dafr$Exome2,
+            reference = ExomeCount.dafr$Exome3,
             formula = 'cbind(test, reference) ~ 1',
-            subset.for.speed = seq(1, nrow(ExomeCount), 100))
+            subset.for.speed = seq(1, nrow(ExomeCount.dafr), 100))
 
 show(test)
 @ 
@@ -85,10 +111,10 @@ This step is demonstrated below.
 <<reference.selection>>=
 my.test <- ExomeCount$Exome4
 my.ref.samples <- c('Exome1', 'Exome2', 'Exome3')
-my.reference.set <- as.matrix(ExomeCount[, my.ref.samples])
+my.reference.set <- as.matrix(ExomeCount.dafr[, my.ref.samples])
 my.choice <- select.reference.set (test.counts = my.test, 
                                    reference.counts = my.reference.set, 
-                                   bin.length = (ExomeCount$end - ExomeCount$start)/1000, 
+                                   bin.length = (ExomeCount.dafr$end - ExomeCount.dafr$start)/1000, 
                                    n.bins.reduced = 10000)
 
 print(my.choice[[1]])
@@ -96,7 +122,7 @@ print(my.choice[[1]])
 
 Using the output of this procedure we can construct the reference set.
 <<construct.ref>>=
-my.reference.selected <- apply(X = as.matrix( ExomeCount[, my.choice$reference.choice] ), 
+my.reference.selected <- apply(X = as.matrix( ExomeCount.dafr[, my.choice$reference.choice] ), 
                                MAR = 1, 
                                FUN = sum)
 @ 
@@ -116,10 +142,10 @@ We can now call the CNV by running the underlying hidden Markov model:
 <<call.CNVs>>=
 all.exons <- CallCNVs(x = all.exons, 
                       transition.probability = 10^-4, 
-                      chromosome = ExomeCount$space, 
-                      start = ExomeCount$start, 
-                      end = ExomeCount$end, 
-                      name = ExomeCount$names)
+                      chromosome = ExomeCount.dafr$space, 
+                      start = ExomeCount.dafr$start, 
+                      end = ExomeCount.dafr$end, 
+                      name = ExomeCount.dafr$names)
 print(head(all.exons@CNV.calls))
 @ 
 
