@@ -12,7 +12,8 @@ exomes in order to build the best reference set.
 }
 \usage{
 select.reference.set(test.counts, reference.counts, bin.length = NULL,
-n.bins.reduced = 0, data = NULL, formula = 'cbind(test, reference) ~ 1')
+n.bins.reduced = 0, data = NULL, formula = 'cbind(test, reference) ~ 1',
+phi.bins = 1)
 }
 \arguments{
   \item{test.counts}{
@@ -25,8 +26,10 @@ n.bins.reduced = 0, data = NULL, formula = 'cbind(test, reference) ~ 1')
 }
   \item{bin.length}{
     Length (in bp) of each of the regions (often exons, but not
-    necessarily) used to compute the read count data. If not provided
-    all bins are assumed to have equal length.
+    necessarily) that were used to compute the read count data
+    (i.e. what is provided in the argument test.counts of this
+    function). 
+    If not provided all bins are assumed to have equal length.
   }
   \item{n.bins.reduced}{
     This function can be slow when applied genome-wide. For the purpose
@@ -43,6 +46,9 @@ n.bins.reduced = 0, data = NULL, formula = 'cbind(test, reference) ~ 1')
     data frame (for example GC content) can be included in the right
     hand side of the equation'. If covariates are provided they must be
     provided as arguments (in the data frame ``data'').}
+  \item{phi.bins}{Numeric integer (typically 1, 2, or 3) that specifies the number of windows
+    where the over-dispersion parameter phi can vary. It defaults to 1,
+    i.e. a single over-dispersion parameter, independently of read depth.}
 }
 \value{
  \item{reference.choice }{character: list of samples selected as optimum

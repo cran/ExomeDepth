@@ -20,6 +20,7 @@ setMethod("initialize", "ExomeDepth", function(.Object,
                                                test,
                                                reference,
                                                formula = 'cbind(test, reference) ~ 1',
+                                               phi.bins = 1,
                                                subset.for.speed = NULL) {
   if (length(test) != length(reference)) stop("Length of test and numeric must match")
 
@@ -35,13 +36,44 @@ setMethod("initialize", "ExomeDepth", function(.Object,
 
   require(aod)
   message('Now fitting the beta-binomial model: this step can take a few minutes.')
-  mod <- betabin( data = data, formula = as.formula(formula), random = ~ 1, link = 'logit')
+    if (phi.bins == 1) {
+      mod <- betabin( data = data, formula = as.formula(formula), random = ~ 1, link = 'logit')
+      .Object@phi <- rep(mod@param[[ 'phi.(Intercept)']], nrow(data))
+      message('Estimated value for phi')
+      print(mod@param[[ 'phi.(Intercept)']])      
+    } else {
+      
+      ceiling.bin <- quantile(reference, probs = c( 0.85, 1) )
+      bottom.bins <- seq(from = 0, to =  ceiling.bin[1], by =  ceiling.bin[1]/(phi.bins-1))
+      complete.bins <- as.numeric(c(bottom.bins, ceiling.bin[2] + 1))
+      data$depth.quant <- factor(sapply(reference, FUN = function(x) {sum (x >= complete.bins)}))
+############# a check
+      my.tab <-  table(data$depth.quant)
+      if (length(my.tab) != phi.bins) {
+        print(my.tab)
+        stop('Binning did not happen properly')
+      }
+      
+      mod <- betabin (data = data, formula = as.formula(formula), random = as.formula('~ depth.quant'),  link = 'logit')
+      phi.estimates <-  as.numeric(mod@random.param)
+      message('Estimated values for phi')
+      print(phi.estimates)      
+      data$phi <-  phi.estimates[  data$depth.quant ]
+  
+#### Now the linear interpolation
+      fc <- approxfun (x = c(complete.bins[ 1:phi.bins] + complete.bins[ 2:(phi.bins+1)])/2, y =  phi.estimates, yleft = phi.estimates[1], yright = phi.estimates[phi.bins])
+      data$phi.linear <- fc (reference)
+  
+      .Object@phi <- data$phi.linear
+    }
+  
   print(summary(mod))
   .Object@formula <- formula
   .Object@test <- test
   .Object@reference <- reference
   .Object@expected <- aod::fitted(mod)
-  .Object@phi <- mod@param[[ 'phi.(Intercept)']]
+
+  
   .Object@annotations <- data.frame()
   
   message('Now computing the likelihood for the different copy number states')
@@ -66,7 +98,7 @@ if (!isGeneric("show")) {
 setMethod("show", "ExomeDepth", function(object) {
   cat('Number of data points: ', length(object@test), '\n')
   cat('Formula: ', object@formula, '\n')
-  cat('Phi parameter: ', object@phi, '\n')
+  cat('Phi parameter (range if multiple values have been set): ', range(object@phi), '\n')
   if (ncol(object@likelihood) == 3) cat("Likelihood computed\n") else cat("Likelihood not computed\n")
 })
 
@@ -106,7 +138,7 @@ setMethod("TestCNV", "ExomeDepth", function(x, chromosome, start, end, type) {
 
   
   which.exons <- which((x@annotations$chromosome == chromosome) & (x@annotations$start >= start) & (x@annotations$end <= end))
-
+  
   if (type == 'deletion') log.ratio <- sum(x@likelihood[ which.exons, 1] - x@likelihood[ which.exons, 2])
   if (type == 'duplication') log.ratio <- sum(x@likelihood[ which.exons, 3] - x@likelihood[ which.exons, 2])
 
