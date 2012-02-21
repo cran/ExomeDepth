@@ -39,10 +39,8 @@ CallCNVs(x, chromosome, start, end, name, transition.probability = 0.0001)
   three hidden states (normal, deletion, duplication).
 }
 \value{
-  A list with the following elements:
-  \item{calls }{The list of CNV calls, including Bayes factor in favour
-    of the call, expected and observed number of reads and position of the
-    CNV call.}
+  The same ExomeDepth object provided as input but with the slot
+  CNVcalls containing a data frame with the output of the calling.
 }
 \author{
   Vincent Plagnol

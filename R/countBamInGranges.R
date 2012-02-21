@@ -39,23 +39,31 @@ getBamCounts <- function(bed.frame = NULL, bed.file = NULL, bam.files, min.mapq 
     if (is.null(bed.file)) {
       stop("If no bed data frame is provided there must be a link to a bed file")
     }
-    
     bed.frame <- read.delim(file = bed.file, header =  FALSE, stringsAsFactors = FALSE)
   }
 
   names(bed.frame)[1] <- 'seqnames'
   names(bed.frame)[2] <- 'start'
   names(bed.frame)[3] <- 'end'
-  
+
   if (include.chr) bed.frame$seqnames <- paste('chr', bed.frame$seqnames, sep = '')
-  
-  target <- GRanges(seqnames = factor(bed.frame$seqnames, levels = unique(bed.frame$seqnames)),  ##specifying the levels is important here to not mess up the order
+  chr.names.used <- unique(as.character(bed.frame$seqnames))
+  chr.levels <- c(as.character(seq(1, 22)), subset( chr.names.used, ! chr.names.used %in% as.character(seq(1, 22))))
+
+  bed.frame$seqnames <- factor(bed.frame$seqnames, levels = chr.levels)  ####specifying the levels is important here to not mess up the order
+  bed.frame <- bed.frame[ order(bed.frame$seqnames, bed.frame$start + bed.frame$end), ]  ##order the data frame by position
+    
+  target <- GRanges(seqnames = bed.frame$seqnames,  
                     IRanges(start=bed.frame$start+1,end=bed.frame$end))
   
                                         #if (exomeCopy) {target <- subdivideGRanges(target)}  ##exomeCopy recommends some splitting
   
   rdata <- RangedData(space=seqnames(target),
                       ranges=ranges(target))
+
+  if  ((ncol(bed.frame) >= 4) && (class(bed.frame[,4]) %in% c('character', 'factor'))) {    
+    row.names(rdata) <- bed.frame[,4]  ##add exon names if available
+  }
   
 ############################################################################# add GC content
   if (!is.null(referenceFasta)) {
