@@ -14,7 +14,7 @@ select.reference.set <- function(test.counts, reference.counts, bin.length = NUL
   ############ select the subset of bins which will be used for the selection of the reference set
   total.counts <- apply(reference.counts, MARGIN = 1, FUN = sum) + test.counts
   selected <- which(total.counts > 30 & bin.length > 0)
-  if (n.bins.reduced > 0) selected <- selected[ seq(1, length(selected), length(selected) / n.bins.reduced) ]
+  if ( (n.bins.reduced > length(selected)) && (n.bins.reduced > 0) ) selected <- selected[ seq(1, length(selected), length(selected) / n.bins.reduced) ]
 
 
   test.counts <- test.counts[ selected ]
@@ -61,7 +61,7 @@ select.reference.set <- function(test.counts, reference.counts, bin.length = NUL
     res.data.frame$median.depth[ i ] <- median(reference)
     res.data.frame$RatioSd[ i ] <-  mean(sqrt(1 + (test.counts + reference - 1)*my.mod@phi))
 
-    if (res.data.frame$mean.p[ i ] < 0.05) break;
+    if ( (i > 2) && (res.data.frame$mean.p[ i ] < 0.05)) break;
     
     ##########determine the expected proportion of reads assuming a deletion
     alt.odds <- res.data.frame$mean.p[ i ]/(1-res.data.frame$mean.p[ i ]) * 0.5

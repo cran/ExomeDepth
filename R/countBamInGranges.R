@@ -1,19 +1,22 @@
 
 
-countBamInGRanges.exomeDepth <- function (bam.file, granges, min.mapq = 1, read.width = 1)  {
+countBamInGRanges.exomeDepth <- function (bam.file, index = bam.file, granges, min.mapq = 1, read.width = 1)  {
 
   rds.counts <- numeric(length(granges))
   seq.names <- seqlevels(granges)
   seq.names.in.bam <- names(scanBamHeader(bam.file)[[1]]$targets)
-        
-  for (seq.name in seq.names) {
+
+  message('Parsing ', bam.file, ' with index ', index)
+
+  for (seq.name in seq.names) {  ##for each chromosome
     if (seq.name %in% seq.names.in.bam) {
       granges.subset <- granges[seqnames(granges) == seq.name]
       strand(granges.subset) <- "*"
 
       empty <- TRUE
-      ############################################################################# read paired end 
-      rds <- scanBam(bam.file,
+############################################################################# read paired end      
+      rds <- scanBam(file = bam.file,
+                     index = index, 
                      param = ScanBamParam(flag = scanBamFlag(isDuplicate = FALSE, isPaired = TRUE, isProperPair = TRUE), what = c("pos", "mpos", "mapq"), which = range(granges.subset)))
       mapq.test <- (rds[[1]]$mapq >= min.mapq) & !is.na(rds[[1]]$pos) & (abs(rds[[1]]$mpos - rds[[1]]$pos) < 1000)
       
@@ -26,6 +29,7 @@ countBamInGRanges.exomeDepth <- function (bam.file, granges, min.mapq = 1, read.
 
       ############################################################################# read single end 
       rds <- scanBam(bam.file,
+                     index = index, 
                      param = ScanBamParam(flag = scanBamFlag(isPaired = FALSE), what = c("pos", "mapq"), which = range(granges.subset)))
       mapq.test <- (rds[[1]]$mapq >= min.mapq) & !is.na(rds[[1]]$pos) 
       
@@ -45,7 +49,8 @@ countBamInGRanges.exomeDepth <- function (bam.file, granges, min.mapq = 1, read.
 
 
 
-getBamCounts <- function(bed.frame = NULL, bed.file = NULL, bam.files, min.mapq = 20, read.width = 300, include.chr = FALSE, referenceFasta = NULL) {
+getBamCounts <- function(bed.frame = NULL, bed.file = NULL, bam.files, index.files = bam.files,
+                         min.mapq = 20, read.width = 300, include.chr = FALSE, referenceFasta = NULL) {
   require(GenomicRanges)
   require(Rsamtools)
   
@@ -91,13 +96,20 @@ getBamCounts <- function(bed.frame = NULL, bed.file = NULL, bam.files, min.mapq 
   }
 
 ############################################################################# Parse BAM files
-  message('Parse BAM files')
-  for (bam in bam.files) {
-    message('Parsing ', bam)
-    rdata[[ basename(bam) ]] <- countBamInGRanges.exomeDepth(bam,target, min.mapq = min.mapq, read.width = read.width)
+  nfiles <- length(bam.files)
+  message('Parse ', nfiles, ' BAM files')
+  print(bam.files)
+  
+  for (i in 1:nfiles) {
+    bam <- bam.files[ i ]
+    index <- index.files[ i ]
+    rdata[[ basename(bam) ]] <- countBamInGRanges.exomeDepth(bam,
+                                                             index = index,
+                                                             target,
+                                                             min.mapq = min.mapq,
+                                                             read.width = read.width)
   }
 
-  #if (!exomeCopy) row.names(rdata) <- make.unique(bed.frame$names)
   return(rdata)
 }
   

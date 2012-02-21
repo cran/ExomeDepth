@@ -11,6 +11,7 @@ Essentially a wrapper for the accessory function countBamInGRanges which only co
 getBamCounts(bed.frame = NULL,
 bed.file = NULL,
 bam.files,
+index.files = bam.files,
 min.mapq = 20,
 read.width = 300,
 include.chr = FALSE,
@@ -29,6 +30,11 @@ referenceFasta = NULL)
   function to run.}
   \item{bam.files}{
     \code{character}, list of BAM files to extract read count data from.
+  }
+  \item{index.files}{
+    Optional \code{character} argument with the list of indexes for the BAM files, without the
+    '.bai' suffix. If the indexes are simply obtained by adding .bai to
+    the BAM files, this argument does not need to be specified.
   }
 \item{min.mapq}{
     \code{numeric}, minimum mapping quality to include a read.

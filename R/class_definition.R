@@ -40,8 +40,8 @@ setMethod("initialize", "ExomeDepth", function(.Object,
     if (phi.bins == 1) {
       mod <- betabin( data = data, formula = as.formula(formula), random = ~ 1, link = 'logit')
       .Object@phi <- rep(mod@param[[ 'phi.(Intercept)']], nrow(data))
-      message('Estimated value for phi')
-      print(mod@param[[ 'phi.(Intercept)']])      
+      #message('Estimated value for phi')
+      #print(mod@param[[ 'phi.(Intercept)']])      
     } else {
       
       ceiling.bin <- quantile(reference, probs = c( 0.85, 1) )
@@ -57,8 +57,8 @@ setMethod("initialize", "ExomeDepth", function(.Object,
       
       mod <- betabin (data = data, formula = as.formula(formula), random = as.formula('~ depth.quant'),  link = 'logit')
       phi.estimates <-  as.numeric(mod@random.param)
-      message('Estimated values for phi')
-      print(phi.estimates)      
+      #message('Estimated values for phi')
+      #print(phi.estimates)      
       data$phi <-  phi.estimates[  data$depth.quant ]
   
 #### Now the linear interpolation
@@ -205,6 +205,7 @@ setMethod("CallCNVs", "ExomeDepth", function( x, chromosome, start, end, name, t
 
 somatic.CNV.call <- function(normal, tumor, prop.tumor = 1, chromosome, start, end, names) {
 
+  message('Warning: this function is largely untested and experimental')
   message('Initializing the exomeDepth object')
   myTest <- new('ExomeDepth',
                 test= tumor,
@@ -223,3 +224,39 @@ somatic.CNV.call <- function(normal, tumor, prop.tumor = 1, chromosome, start, e
  return (myTest)
 }
  
+
+
+
+setGeneric("AnnotateExtra", def = function(x, reference.annotation, min.overlap = 0.5, column.name = 'overlap') standardGeneric('AnnotateExtra'))
+
+
+setMethod("AnnotateExtra", "ExomeDepth", function( x, reference.annotation, min.overlap, column.name) {
+
+    my.calls.GRanges <- GRanges(seqnames = x@CNV.calls$chromosome,
+                                                              IRanges(start=x@CNV.calls$start,end= x@CNV.calls$end))
+
+      test <- findOverlaps(query = my.calls.GRanges, subject = reference.annotation)
+      test <- data.frame(calls = test@queryHits, ref = test@subjectHits)
+
+    ###add info about the CNV calls
+      test$call.start <- x@CNV.calls$start[ test$calls ]
+      test$call.end <- x@CNV.calls$end[ test$calls ]
+      test$chromosome.end <- x@CNV.calls$chromosome[ test$calls ]
+
+      ## info about the reference calls
+      test$callsref.start <- start(reference.annotation) [ test$ref ]
+      test$callsref.end<- end(reference.annotation) [ test$ref ]
+
+    ### estimate the overlap
+      test$overlap <- pmin (test$callsref.end, test$call.end) -  pmax( test$call.start, test$callsref.start)
+      test <- subset(test, overlap > min.overlap*(test$call.end - test$call.start))
+
+      my.split <-  split(as.character(elementMetadata(reference.annotation)$names)[ test$ref], f = test$calls)
+      my.overlap.frame <- data.frame(call = names(my.split),  target = sapply(my.split, FUN = paste, collapse = ','))
+      my.overlap.frame <- data.frame(call = names(my.split),  target = sapply(my.split, FUN = paste, collapse = ','))
+
+
+      x@CNV.calls[, column.name] <- as.character(my.overlap.frame$target)[ match(1:nrow(x@CNV.calls), table = my.overlap.frame$call) ]
+      return(x)
+  })
+

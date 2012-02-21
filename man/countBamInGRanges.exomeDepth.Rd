@@ -8,11 +8,13 @@
   region defined by a GenomicRanges object.
 }
 \usage{
-countBamInGRanges.exomeDepth(bam.file, granges, min.mapq = 1, read.width = 1)
+countBamInGRanges.exomeDepth(bam.file, index = bam.file, granges, min.mapq = 1, read.width = 1)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{bam.file}{BAM file to be parsed}
+  \item{index}{Index of the BAM file, without the '.bai'
+    suffix.}
   \item{granges}{Genomic ranges object defining the bins}
   \item{min.mapq}{Minimum mapping quality}
   \item{read.width}{Window around the target region to count a read

@@ -90,7 +90,7 @@ setMethod("plot", "ExomeDepth", function(x, sequence, xlim, ylim = c(0, 3), coun
     my.pos <- axTicks(side = 1)
     axis(side = 1, at = my.pos, labels = as.integer(my.pos))
     
-    exon.array <- subset(annotations, chromosome == sequence & start > xlim[1] & end < xlim[2])
+    exon.array <- subset(annotations, chromosome == sequence & end > xlim[1] & start < xlim[2])
     exon.array$short.name <- gsub(exon.array$name, pattern = '-.*', replacement = '')
     exon.array$start.gene <- tapply(IND = exon.array$short.name, exon.array$start, FUN = min) [ exon.array$short.name ]  
     exon.array$middle <- 0.5*(exon.array$start + exon.array$end)
