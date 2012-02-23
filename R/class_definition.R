@@ -8,7 +8,8 @@ setClass("ExomeDepth",
                         expected = "numeric",
                         phi = "numeric",
                         likelihood = "matrix",
-                        annotations = "data.frame"))
+                        annotations = "data.frame",
+                        CNV.calls = "data.frame"))
 
 
 
@@ -111,14 +112,6 @@ setMethod("TestCNV", "ExomeDepth", function(x, chromosome, start, end, type) {
   return  (log.ratio)
 })
 
-#############################################################################
-setGeneric("AddAnnotations", def = function(x, name, chromosome, start, end) standardGeneric('AddAnnotations'))
-
-setMethod("AddAnnotations", "ExomeDepth", function(x, name, chromosome, start, end) {
-  x@annotations <- data.frame(name = name, chromosome = factor(chromosome), start = start, end = end)
-  x
-})
-
 
 
 
@@ -129,6 +122,23 @@ setMethod("CallCNVs", "ExomeDepth", function( x, chromosome, start, end, name, t
 
   if ( length(start) != length(chromosome) || length(end) != length(chromosome) || length(name) != length(chromosome) ) stop('Chromosome, start and end vector must have the same lengths.\n')
   if (nrow(x@likelihood) != length(chromosome) ) stop('The annotation vectors must have the same length as the data in the ExomeDepth x')
+
+  ### Try to get the chromosome order right
+  chr.names.used <- unique(as.character(chromosome))
+  chr.levels <- c(as.character(seq(1, 22)), subset( chr.names.used, ! chr.names.used %in% as.character(seq(1, 22))))
+  chr.levels <- subset(chr.levels, chr.levels %in% chr.names.used)
+  
+  x@annotations <- data.frame(name = name, chromosome = factor(chromosome, levels = chr.levels), start = start, end = end)
+  my.new.order <-  order(x@annotations$chromosome, 0.5*(x@annotations$start + x@annotations$end) )
+
+  if (sum( my.new.order != 1:nrow(x@annotations) ) > 0) {
+    message('Positions of exons seem non ordered, so ExomeDepth will reorder the data according to chromosome and position')
+    x@test <- x@test[ my.new.order ]
+    x@reference <- x@reference[ my.new.order ]
+    x@annotations <- x@annotations[ my.new.order, ]
+    x@likelihood <- x@likelihood[ my.new.order, ]
+  }
+
   
   total <- x@test + x@reference
   transitions <- matrix(nrow = 3, ncol = 3,
@@ -137,7 +147,7 @@ setMethod("CallCNVs", "ExomeDepth", function( x, chromosome, start, end, name, t
                           0.5, 0, 0.5),
                         byrow = TRUE)
   
-  my.breaks <- which(diff(as.numeric(chromosome)) != 0) + 1
+  my.breaks <- which(diff(as.numeric(x@annotations$chromosome)) != 0) + 1
   x@likelihood[ my.breaks,1 ] <- - Inf
   x@likelihood[ my.breaks,3  ] <- - Inf
   
@@ -145,10 +155,10 @@ setMethod("CallCNVs", "ExomeDepth", function( x, chromosome, start, end, name, t
 
   ################################ Now make it look better, add relevant info
   if (nrow(my.calls$calls) > 0) {
-    
-    my.calls$calls$start <- start[ my.calls$calls$start.p ]
-    my.calls$calls$end <- end[ my.calls$calls$end.p ]
-    my.calls$calls$chromosome <- chromosome[ my.calls$calls$start.p ]
+
+    my.calls$calls$start <- x@annotations$start[ my.calls$calls$start.p ]
+    my.calls$calls$end <- x@annotations$end[ my.calls$calls$end.p ]
+    my.calls$calls$chromosome <- as.character(x@annotations$chromosome[ my.calls$calls$start.p ])
   
     my.calls$calls$id <- paste('chr', my.calls$calls$chromosome, ':',  my.calls$calls$start, '-',  my.calls$calls$end, sep = '')
     my.calls$calls$type <- c('deletion', 'duplication')[ my.calls$calls$type ]
@@ -173,9 +183,9 @@ setMethod("CallCNVs", "ExomeDepth", function( x, chromosome, start, end, name, t
     my.calls$calls$reads.ratio <-  signif(my.calls$calls$reads.observed / my.calls$calls$reads.expected, 3)
     my.calls$calls$BF <- signif( log10(exp(1))*my.calls$calls$BF, 3)
   }
-    
   
-  return (my.calls)
+  x@CNV.calls <- my.calls$calls
+  return (x)
 
 })
 

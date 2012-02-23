@@ -98,13 +98,13 @@ all.exons <- new('ExomeDepth',
 
 We can now call the CNV by running the underlying hidden Markov model:
 <<call.CNVs>>=
-my.calls <- CallCNVs(x = all.exons, 
-                     transition.probability = 10^-4, 
-                     chromosome = ExomeCount$space, 
-                     start = ExomeCount$start, 
-                     end = ExomeCount$end, 
-                     name = ExomeCount$names)
-print(head(my.calls$calls))
+all.exons <- CallCNVs(x = all.exons, 
+                      transition.probability = 10^-4, 
+                      chromosome = ExomeCount$space, 
+                      start = ExomeCount$start, 
+                      end = ExomeCount$end, 
+                      name = ExomeCount$names)
+print(head(all.exons@CNV.calls))
 @ 
 
 

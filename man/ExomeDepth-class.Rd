@@ -40,7 +40,10 @@
     \item{\code{likelihood}:}{A matrix of likelihood values, one column
       per copy number (deletion, normal, duplication).}
     \item{\code{annotations}:}{A \code{data.frame} specifying the
-      chromosome, start and end for the bins used in the read count computation.}
+      chromosome, start and end for the bins used in the read count
+      computation.}
+    \item{\code{CNV.calls}:}{A \code{data.frame} describing
+      the output of the CNV calling procedure.}
   }
 }
 \section{Methods}{
