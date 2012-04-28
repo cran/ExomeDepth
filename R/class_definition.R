@@ -36,15 +36,16 @@ setMethod("initialize", "ExomeDepth", function(.Object,
   require(aod)
   message('Now fitting the beta-binomial model: this step can take a few minutes.')
   mod <- betabin( data = data, formula = as.formula(formula), random = ~ 1, link = 'logit')
-  
+  print(summary(mod))
   .Object@formula <- formula
   .Object@test <- test
   .Object@reference <- reference
   .Object@expected <- aod::fitted(mod)
   .Object@phi <- mod@param[[ 'phi.(Intercept)']]
   .Object@annotations <- data.frame()
-
+  
   message('Now computing the likelihood for the different copy number states')
+  #save(list = '.Object', file = 'debug.RData')
   .Object@likelihood <- .Call("get_loglike_matrix",
                               phi = .Object@phi,
                               expected = .Object@expected,
