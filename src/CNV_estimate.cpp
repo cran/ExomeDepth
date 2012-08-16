@@ -55,7 +55,7 @@ SEXP get_loglike_matrix (const SEXP phi_a, const SEXP expected_a, const SEXP tot
   const int * total = INTEGER( total_a );
   const int * observed = INTEGER( observed_a );
   const unsigned int nCNVs = length( total_a );
-  const double phi = REAL( phi_a )[0];
+  const double * phi = REAL( phi_a );
 
   
   
@@ -66,7 +66,7 @@ SEXP get_loglike_matrix (const SEXP phi_a, const SEXP expected_a, const SEXP tot
   double * rans = REAL(ans);
   for (unsigned int cnv = 0; cnv != nCNVs; cnv++) {
 
-    double bestSd = sqrt(phi*expected[ cnv ]*(1.-expected[ cnv ]));
+    double bestSd = sqrt(phi[ cnv ]*expected[ cnv ]*(1.-expected[ cnv ]));
     
     rans[cnv + nCNVs*0] =   myprob ( expected[ cnv ]*0.5/ ( expected[ cnv ]*0.5 +  1- expected[ cnv ] ), bestSd, total[ cnv ], observed[ cnv]);
     rans[cnv + nCNVs*1] =   myprob ( expected[ cnv ], bestSd, total[ cnv ], observed[ cnv]);

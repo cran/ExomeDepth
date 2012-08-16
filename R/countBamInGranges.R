@@ -14,7 +14,7 @@ countBamInGRanges.exomeDepth <- function (bam.file, granges, min.mapq = 1, read.
       empty <- TRUE
       ############################################################################# read paired end 
       rds <- scanBam(bam.file,
-                     param = ScanBamParam(flag = scanBamFlag(isPaired = TRUE, isProperPair = TRUE), what = c("pos", "mpos", "mapq"), which = range(granges.subset)))
+                     param = ScanBamParam(flag = scanBamFlag(isDuplicate = FALSE, isPaired = TRUE, isProperPair = TRUE), what = c("pos", "mpos", "mapq"), which = range(granges.subset)))
       mapq.test <- (rds[[1]]$mapq >= min.mapq) & !is.na(rds[[1]]$pos) & (abs(rds[[1]]$mpos - rds[[1]]$pos) < 1000)
       
       if (sum(mapq.test) > 0 && !is.na(sum(mapq.test) )) {
@@ -76,7 +76,7 @@ getBamCounts <- function(bed.frame = NULL, bed.file = NULL, bam.files, min.mapq 
                       ranges=ranges(target))
 
   if  ((ncol(bed.frame) >= 4) && (class(bed.frame[,4]) %in% c('character', 'factor'))) {    
-    row.names(rdata) <- bed.frame[,4]  ##add exon names if available
+    row.names(rdata) <- make.unique(bed.frame[,4])  ##add exon names if available
   }
   
 ############################################################################# add GC content

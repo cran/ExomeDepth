@@ -1,15 +1,15 @@
 
-setMethod("plot", "ExomeDepth", function(x, sequence, xlim, ylim = c(0, 3), count.threshold = 100, ylab = 'Observed by expected read ratio', xlab = '', type = 'b', pch = '+', with.gene = FALSE, col = 'red', ...) {
+setMethod("plot", "ExomeDepth", function(x, sequence, xlim, ylim = c(0, 3), count.threshold = 40, ylab = 'Observed by expected read ratio', xlab = '', type = 'b', pch = '+', with.gene = FALSE, annotations = NULL, col = 'red', ...) {
 
   if (with.gene) {  ##if we want the gene information we add this extra bit
     layout(mat = matrix(data = 1:2, nrow = 2, ncol = 1), widths = c(1, 1), heights = c(2, 1) )
     par(mar = c(0, 4, 2, 2))
   }
-  
-  anno <- x@annotations
-  selected <-  which(anno$chromosome == sequence & anno$start >= xlim[1] & anno$end <= xlim[2] & x@reference + x@test > count.threshold)
-  anno <- anno[selected,]
 
+  anno <- x@annotations
+  selected <-  which(anno$chromosome == sequence & anno$start >= xlim[1] & anno$end <= xlim[2] & x@reference*x@expected > count.threshold)
+  anno <- anno[selected,]
+                 
   anno$expected <- x@expected[ selected ]
   anno$freq <- x@test[ selected ]/ (x@reference[selected ] + x@test[selected])
   anno$middle <- 0.5*(anno$start + anno$end)
@@ -17,17 +17,18 @@ setMethod("plot", "ExomeDepth", function(x, sequence, xlim, ylim = c(0, 3), coun
   anno$test <- x@test[ selected ]
   anno$reference <- x@reference[ selected ]
   anno$total.counts <- anno$test + anno$reference
-
+  if (length( x@phi ) == 1) anno$phi <- x@phi else anno$phi <-  x@phi [ selected ]
   
   for (i in 1:nrow(anno)) {
-    anno$my.min.norm[ i ] <- qbetabinom (p = 0.025, size =  anno$total.counts[ i ], phi = x@phi, prob =  anno$expected[ i ])
-    anno$my.max.norm[ i ] <- qbetabinom (p = 0.975, size =  anno$total.counts[ i ], phi = x@phi, prob =  anno$expected[ i ])
+    anno$my.min.norm[ i ] <- qbetabinom (p = 0.025, size =  anno$total.counts[ i ], phi = anno$phi[ i ], prob =  anno$expected[ i ])
+    anno$my.max.norm[ i ] <- qbetabinom (p = 0.975, size =  anno$total.counts[ i ], phi = anno$phi[ i ], prob =  anno$expected[ i ])
   }
+  
+  #anno$my.min.norm.prop <-   anno$my.min.norm / (anno$my.min.norm + anno$reference)
+  #anno$my.max.norm.prop <-   anno$my.max.norm / (anno$my.max.norm + anno$reference)
 
-  anno$my.min.norm.prop <-   anno$my.min.norm / (anno$my.min.norm + anno$reference)
-  anno$my.max.norm.prop <-   anno$my.max.norm / (anno$my.max.norm + anno$reference)
-
-
+  anno$my.min.norm.prop <-   anno$my.min.norm /  anno$total.counts
+  anno$my.max.norm.prop <-   anno$my.max.norm /  anno$total.counts
   
   if (is.null(xlim)) xlim <- range(anno$middle)
   if (is.null(ylim)) ylim <- range(anno$ratio)
@@ -70,6 +71,9 @@ setMethod("plot", "ExomeDepth", function(x, sequence, xlim, ylim = c(0, 3), coun
           ...)
 
   if (with.gene) {
+
+    if (is.null(annotations)) annotations <- anno
+    
     message("Plotting the gene data")
     par(mar = c(4,4,0,2))
     
@@ -86,7 +90,7 @@ setMethod("plot", "ExomeDepth", function(x, sequence, xlim, ylim = c(0, 3), coun
     my.pos <- axTicks(side = 1)
     axis(side = 1, at = my.pos, labels = as.integer(my.pos))
     
-    exon.array <- subset(x@annotations, chromosome == sequence & start > xlim[1] & end < xlim[2])
+    exon.array <- subset(annotations, chromosome == sequence & start > xlim[1] & end < xlim[2])
     exon.array$short.name <- gsub(exon.array$name, pattern = '-.*', replacement = '')
     exon.array$start.gene <- tapply(IND = exon.array$short.name, exon.array$start, FUN = min) [ exon.array$short.name ]  
     exon.array$middle <- 0.5*(exon.array$start + exon.array$end)

@@ -3,7 +3,7 @@
 
 
 
-select.reference.set <- function(test.counts, reference.counts, bin.length = NULL, n.bins.reduced = 0, data = NULL, formula = 'cbind(test, reference) ~ 1') {
+select.reference.set <- function(test.counts, reference.counts, bin.length = NULL, n.bins.reduced = 0, data = NULL, formula = 'cbind(test, reference) ~ 1', phi.bins = 1) {
 
   if (class(reference.counts) != 'matrix') stop('The reference sequence count data must be provided as a matrix')
   if (nrow(reference.counts) != length(test.counts)) stop("The number of rows of the reference matrix must match the length of the test count data\n")
@@ -53,7 +53,8 @@ select.reference.set <- function(test.counts, reference.counts, bin.length = NUL
                   test = test.counts,
                   reference = reference,
                   formula = formula,
-                  data = data)
+                  data = data,
+                  phi.bins = phi.bins)
     
     res.data.frame$phi[ i ] <- my.mod@phi
     res.data.frame$mean.p[ i ] <- mean(my.mod@expected)

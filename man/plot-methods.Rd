@@ -9,7 +9,10 @@
 }
 \section{Methods}{
 \describe{
-\item{\code{signature(x = "ExomeDepth", sequence, count.threshold = 100, xlim = NULL, ylim = NULL, ylab = 'Observed by expected read ratio', xlab = '', type = 'b', pch = '+', with.gene = FALSE, col = 'red', ...)}}{
+\item{\code{signature(x = "ExomeDepth", sequence, count.threshold = 100,
+    xlim = NULL, ylim = NULL, ylab = 'Observed by expected read ratio',
+    xlab = '', type = 'b', pch = '+', with.gene = FALSE, annotations =
+    NULL, col = 'red', ...)}}{
   Plot the read depth data for a CNV call.
 }
 }}
