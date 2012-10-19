@@ -43,6 +43,8 @@ While there is no set rule for this number, and the code may work very well with
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Create count data from BAM files}
 
+
+\subsection{Count for the autosomes}
 Firstly, to facilitate the generation of read count data,  exon positions for the hg19 build of the human genome are available within \texttt{ExomeDepth}.
 This \texttt{exons.hg19} data frame can be directly passed as an argument of \texttt{getBAMCounts} (see below).
 
@@ -86,6 +88,20 @@ print(head(ExomeCount.dafr))
 @ 
 
 
+\subsection{Counts for chromosome X}
+Calling CNVs on the X chromosome can create issues if the exome sample of interest and the reference exome samples it is being compared to (what I call the aggregate reference) are not gender matched.
+For this reason the chromosome X exonic regions are not included by default in the data frame \texttt{exons.hg19}, mostly to avoid users getting low quality CNV calls because of this issue.
+However, loading the same dataset in R also brings another object called \texttt{exons.hg19.X} that containts the chromosome X exons.
+
+<<<read.count>>=
+data(exons.hg19.X)
+head(exons.hg19.X)
+@ 
+
+This object can be used to generate CNV counts and further down the line CNV calls, in the same way as \texttt{exons.hg19}.
+While this is not really necessary, I would recommend calling CNV on the X separately from the autosomes.
+Also make sure that the genders are matched properly (i.e. do not use male as a reference for female samples and vice versa).
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{Load an example dataset}
@@ -103,9 +119,13 @@ test <- new('ExomeDepth',
 show(test)
 @ 
 
+
+
 \section{Build the most appropriate reference set}
 
-Moving on toward a more useful computation, the first step is to select the most appropriate reference sample.
+A key idea behing ExomeDepth is that each exome should not be compared to all other exomes but rather to an optimized set of exomes that are well correlated with that exome.
+This is what I call the optimized aggregate reference set, which is optimized for each exome sample.
+So the first step is to select the most appropriate reference sample.
 This step is demonstrated below.
 
 <<reference.selection>>=
@@ -149,6 +169,65 @@ all.exons <- CallCNVs(x = all.exons,
 print(head(all.exons@CNV.calls))
 @ 
 
+Now the last thing to do is to save it in an easily readable format (csv in this example, which can be opened in excel if needed):
+<<write.results, eval = FALSE>>=
+output.file <- 'exome_calls.csv'
+write.csv(file = output.file,
+          x = all.exons@CNV.calls,
+          row.names = FALSE)
+@ 
+
+Note that it is probably best to annotate the calls before creating that csv file (see below for annotation tools).
+
+
+\section{Better annotation of CNV calls}
+Much can be done to annotate CNV calls and this is a difficult problem.
+While this is a work in progress, I have started adding basic options. 
+The first, and perhaps the most useful, is to identify the overlap with a set of common CNVs identified in Conrad et al, Nature 2010.
+If one is looking for rare CNVs, these should probably be filtered out.
+The first step is to load these reference data from Conrad et al. To make things as practical as possible, these data are now available as part of ExomeDepth.
+
+<<Conrad>>=
+data(Conrad.hg19)
+head(Conrad.hg19.common.CNVs)
+@ 
+
+Then one can use this information to annotate our CNV calls with the function \texttt{AnnotateExtra}.
+
+<<anno.extra>>=
+all.exons <- AnnotateExtra(x = all.exons,
+                           reference.annotation = Conrad.hg19.common.CNVs,
+                           min.overlap = 0.5,
+                           column.name = 'Conrad.hg19')
+@
+
+
+The \texttt{min.overlap} argument set to 0.5 requires that the Conrad reference call overlaps at least 50\% of our CNV calls to declare an overlap.
+The \texttt{column.name} argument simply defines the name of the column that will store the overlap information.
+The outcome of this procedure can be checked with:
+
+<<anno.check>>=
+print(head(all.exons@CNV.calls))
+@ 
+
+
+I have processed the Conrad et al data in the GRanges format. 
+Potentially any other reference dataset could be converted as well. See for example the exon information:
+
+<< prep.GRanges>>=
+exons.hg19.GRanges <- GRanges(seqnames = exons.hg19$chromosome,
+                                IRanges(start=exons.hg19$start,end=exons.hg19$end),
+                                names = exons.hg19$name)
+all.exons <- AnnotateExtra(x = all.exons,
+                           reference.annotation = exons.hg19.GRanges,
+                           min.overlap = 0.0001,
+                           column.name = 'exons.hg19')
+all.exons@CNV.calls[3:6,]
+@ 
+
+This time I report any overlap with an exon by specifying a value close to 0 in the \texttt{min.overlap} argument.
+Note the metadata column \texttt{names} which MUST be specified for the annotation to work properly.
+
 
 \section{A visual example}
 
@@ -165,6 +244,63 @@ plot (all.exons,
       main = 'RHD gene',
       with.gene = TRUE)
 @ 
+
+
+
+\section{How to loop over the multiple samples}
+A FAQ is a way to deal with a set of a significant number of exomes, i.e. how to loop over all of them using ExomeDepth.
+This can be done with a loop.
+I show below an example of how I would code things.
+The code is not executed in the vignette to save time when building the package, but it can give some hints to users who do not have extensive experience with R.
+
+<<loop, eval=FALSE>>=
+ExomeCount.mat <- as.matrix(ExomeCount.dafr[, grep(names(ExomeCount.dafr), pattern = 'Exome.*')])
+nsamples <- ncol(ExomeCount.mat)
+for (i in 1:nsamples) {
+  
+#### Create the aggregate reference set for this sample
+  my.choice <- select.reference.set (test.counts =  ExomeCount.mat[,i],
+                                     reference.counts = ExomeCount.mat[,-i],
+                                     bin.length = (ExomeCount.dafr$end - ExomeCount.dafr$start)/1000,
+                                     n.bins.reduced = 10000)
+  
+  my.reference.selected <- apply(X = ExomeCount.mat[, my.choice$reference.choice],
+                                 MAR = 1,
+                                 FUN = sum)
+  
+  message('Now creating the ExomeDepth object')
+  all.exons <- new('ExomeDepth',
+                   test = ExomeCount.mat[,i],
+                   reference = my.reference.selected,
+                   formula = 'cbind(test, reference) ~ 1')
+  
+################ Now call the CNVs
+  all.exons <- CallCNVs(x = all.exons,
+                        transition.probability = 10^-4,
+                        chromosome = ExomeCount.dafr$space,
+                        start = ExomeCount.dafr$start,
+                        end = ExomeCount.dafr$end,
+                        name = ExomeCount.dafr$names)
+  
+########################### Now annotate the ExomeDepth object
+  all.exons <- AnnotateExtra(x = all.exons,
+                             reference.annotation = Conrad.hg19.common.CNVs,
+                             min.overlap = 0.5,
+                             column.name = 'Conrad.hg19')
+  
+  all.exons <- AnnotateExtra(x = all.exons,
+                             reference.annotation = exons.hg19.GRanges,
+                             min.overlap = 0.0001,
+                             column.name = 'exons.hg19')
+    
+  output.file <- paste('Exome_', i, 'csv', sep = '')
+  write.csv(file = output.file, x = all.exons@CNV.calls, row.names = FALSE)
+  
+}
+
+
+@
+
 
 \section{Technical information about R session}
 
