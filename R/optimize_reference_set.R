@@ -56,7 +56,7 @@ select.reference.set <- function(test.counts, reference.counts, bin.length = NUL
                   data = data,
                   phi.bins = phi.bins)
     
-    res.data.frame$phi[ i ] <- my.mod@phi
+    res.data.frame$phi[ i ] <- mean(my.mod@phi)
     res.data.frame$mean.p[ i ] <- mean(my.mod@expected)
     res.data.frame$median.depth[ i ] <- median(reference)
     res.data.frame$RatioSd[ i ] <-  mean(sqrt(1 + (test.counts + reference - 1)*my.mod@phi))

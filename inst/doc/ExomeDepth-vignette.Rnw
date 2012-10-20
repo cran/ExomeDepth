@@ -254,8 +254,19 @@ I show below an example of how I would code things.
 The code is not executed in the vignette to save time when building the package, but it can give some hints to users who do not have extensive experience with R.
 
 <<loop, eval=FALSE>>=
+
+#### get the annotation datasets to be used later
+data(Conrad.hg19)
+exons.hg19.GRanges <- GRanges(seqnames = exons.hg19$chromosome,
+                              IRanges(start=exons.hg19$start,end=exons.hg19$end),
+                              names = exons.hg19$name)
+
+
+### prepare the main matrix of read count data
 ExomeCount.mat <- as.matrix(ExomeCount.dafr[, grep(names(ExomeCount.dafr), pattern = 'Exome.*')])
 nsamples <- ncol(ExomeCount.mat)
+
+### start looping over each sample
 for (i in 1:nsamples) {
   
 #### Create the aggregate reference set for this sample
