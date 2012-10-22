@@ -31,6 +31,8 @@ AnnotateExtra(x, reference.annotation, min.overlap = 0.5, column.name = "overlap
   A ExomeDepth object with the relevant annotations added to the
   CNVcalls slot.
 }
+\details{A recent version of GenomicRanges (> 1.8.10) is required. Otherwise the
+  function will return a warning and not update the ExomeDepth object.}
 \references{
   A robust model for read count data in exome sequencing experiments and
   implications for copy number variant calling, Plagnol et al, Bioinformatics

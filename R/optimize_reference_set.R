@@ -5,6 +5,8 @@
 
 select.reference.set <- function(test.counts, reference.counts, bin.length = NULL, n.bins.reduced = 0, data = NULL, formula = 'cbind(test, reference) ~ 1', phi.bins = 1) {
 
+  message('Optimization of the choice of aggregate reference set')
+  
   if (class(reference.counts) != 'matrix') stop('The reference sequence count data must be provided as a matrix')
   if (nrow(reference.counts) != length(test.counts)) stop("The number of rows of the reference matrix must match the length of the test count data\n")
   if (is.null(bin.length)) bin.length <- rep(1, length(selected))
@@ -14,15 +16,14 @@ select.reference.set <- function(test.counts, reference.counts, bin.length = NUL
   ############ select the subset of bins which will be used for the selection of the reference set
   total.counts <- apply(reference.counts, MARGIN = 1, FUN = sum) + test.counts
   selected <- which(total.counts > 30 & bin.length > 0)
-  if ( (n.bins.reduced > length(selected)) && (n.bins.reduced > 0) ) selected <- selected[ seq(1, length(selected), length(selected) / n.bins.reduced) ]
-
+  if ( (n.bins.reduced < length(selected)) && (n.bins.reduced > 0) ) selected <- selected[ seq(1, length(selected), length(selected) / n.bins.reduced) ]
 
   test.counts <- test.counts[ selected ]
   reference.counts <- reference.counts[ selected, ]
   bin.length <- bin.length[ selected]
   if (!is.null(data)) data <- data[ selected, ]
   n.bins <- length(selected)
-  message('Number of selected bins: ', n.bins, '\n')
+  message('Number of selected bins: ', n.bins)
 
 
   ############### Now sort the data according to the correlation
