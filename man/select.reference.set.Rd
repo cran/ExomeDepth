@@ -32,12 +32,12 @@ phi.bins = 1)
     If not provided all bins are assumed to have equal length.
   }
   \item{n.bins.reduced}{
-    This function can be slow when applied genome-wide. For the purpose
-    of building the reference sample, it is not necessary to use the
-    full data. The number provided by this argument specifies the number
-    of regions (typically exons) that will be sub-sampled (using a grid)
-    to optimise the referenceset. We find that 10,000 is largely
-    sufficient for exome data.
+    This optimization function can be slow when applied genome-wide. For
+    the purpose of building the reference sample, it is not necessary to
+    use the  full data. The number provided by this argument specifies
+    the number of regions (typically exons) that will be sub-sampled
+    (using a grid) to optimise the referenceset. I find that 10,000 is
+    largely sufficient for exome data.
   }
   \item{data}{Defaults to NULL: A data frame of covariates that can be included in the
     model.}

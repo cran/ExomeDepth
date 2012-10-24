@@ -30,9 +30,10 @@ setMethod("initialize", "ExomeDepth", function(.Object,
   if (is.null(data)) data <- data.frame(intercept = rep(1, length(test)))
 
   if (!is.null(subset.for.speed)) {
+    subset.for.speed <- subset.for.speed[ subset.for.speed %in% 1:nrow(data) ] ##make sure we do not select non-existing rows
     test <- test[ subset.for.speed ]
     reference <- reference[ subset.for.speed ]
-    data <- subset(data, 1:nrow(data) %in% subset.for.speed)
+    data <- data[ subset.for.speed, , drop = FALSE]
   }
 
   require(aod)
@@ -40,14 +41,12 @@ setMethod("initialize", "ExomeDepth", function(.Object,
     if (phi.bins == 1) {
       mod <- betabin( data = data, formula = as.formula(formula), random = ~ 1, link = 'logit')
       .Object@phi <- rep(mod@param[[ 'phi.(Intercept)']], nrow(data))
-      #message('Estimated value for phi')
-      #print(mod@param[[ 'phi.(Intercept)']])      
     } else {
-      
       ceiling.bin <- quantile(reference, probs = c( 0.85, 1) )
       bottom.bins <- seq(from = 0, to =  ceiling.bin[1], by =  ceiling.bin[1]/(phi.bins-1))
       complete.bins <- as.numeric(c(bottom.bins, ceiling.bin[2] + 1))
       data$depth.quant <- factor(sapply(reference, FUN = function(x) {sum (x >= complete.bins)}))
+      
 ############# a check
       my.tab <-  table(data$depth.quant)
       if (length(my.tab) != phi.bins) {
@@ -57,8 +56,6 @@ setMethod("initialize", "ExomeDepth", function(.Object,
       
       mod <- betabin (data = data, formula = as.formula(formula), random = as.formula('~ depth.quant'),  link = 'logit')
       phi.estimates <-  as.numeric(mod@random.param)
-      #message('Estimated values for phi')
-      #print(phi.estimates)      
       data$phi <-  phi.estimates[  data$depth.quant ]
   
 #### Now the linear interpolation
@@ -67,8 +64,8 @@ setMethod("initialize", "ExomeDepth", function(.Object,
   
       .Object@phi <- data$phi.linear
     }
+
   
-  #print(summary(mod))
   .Object@formula <- formula
   .Object@test <- test
   .Object@reference <- reference
@@ -79,7 +76,6 @@ setMethod("initialize", "ExomeDepth", function(.Object,
   
   message('Now computing the likelihood for the different copy number states')
   if (prop.tumor < 1) message('Proportion of tumor DNA is ', prop.tumor)
-  #save(list = '.Object', file = 'debug.RData')
   .Object@likelihood <- .Call("get_loglike_matrix",
                               phi = .Object@phi,
                               expected = .Object@expected,
@@ -138,8 +134,8 @@ setMethod("CallCNVs", "ExomeDepth", function( x, chromosome, start, end, name, t
 
   ### Try to get the chromosome order right
   chr.names.used <- unique(as.character(chromosome))
-  chr.levels <- c(as.character(seq(1, 22)), subset( chr.names.used, ! chr.names.used %in% as.character(seq(1, 22))))
-  chr.levels <- subset(chr.levels, chr.levels %in% chr.names.used)
+  chr.levels <- c(as.character(seq(1, 22)),  chr.names.used[! chr.names.used %in% as.character(seq(1, 22)) ] )
+  chr.levels <- chr.levels[ chr.levels %in% chr.names.used ]
   
   x@annotations <- data.frame(name = name, chromosome = factor(chromosome, levels = chr.levels), start = start, end = end)
   my.new.order <-  order(x@annotations$chromosome, 0.5*(x@annotations$start + x@annotations$end) )
@@ -232,6 +228,14 @@ setGeneric("AnnotateExtra", def = function(x, reference.annotation, min.overlap 
 
 setMethod("AnnotateExtra", "ExomeDepth", function( x, reference.annotation, min.overlap, column.name) {
 
+  require('GenomicRanges')
+  
+  if (packageVersion('GenomicRanges') < '1.8.10') {
+    warning('The AnnotateExtra function requires a more recent version of the GenomicRanges package (>= 1.8.10). The easiest way to install is probably to use R version >  2.15 and the bioconductor scripts. This function will therefore annotate the same object without the added annotations')
+    return(x)
+  }
+ 
+  
   my.calls.GRanges <- GRanges(seqnames = x@CNV.calls$chromosome,
                               IRanges(start=x@CNV.calls$start,end= x@CNV.calls$end))
   
@@ -249,7 +253,7 @@ setMethod("AnnotateExtra", "ExomeDepth", function( x, reference.annotation, min.
   
 ### estimate the overlap
   test$overlap <- pmin (test$callsref.end, test$call.end) -  pmax( test$call.start, test$callsref.start)
-  test <- subset(test, overlap > min.overlap*(test$call.end - test$call.start))
+  test <- test[ test$overlap > min.overlap*(test$call.end - test$call.start), ]
   
   my.split <-  split(as.character(elementMetadata(reference.annotation)$names)[ test$ref], f = test$calls)
   my.overlap.frame <- data.frame(call = names(my.split),  target = sapply(my.split, FUN = paste, collapse = ','))

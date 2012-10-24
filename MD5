@@ -1,9 +1,9 @@
-6697739424d197afaa12766884a313de *DESCRIPTION
+6262960a7b39e6dfce5535bbac49f0ed *DESCRIPTION
 17e7a0d0094cd59a540785c6416ec7c7 *NAMESPACE
-4aee5cd28e6a0c01a52002824ee36d90 *R/class_definition.R
+1bac7c5bef5a010bcf0f4e98edc4fe8c *R/class_definition.R
 b1df51f34da0619e0d7f2e3c180af82c *R/countBamInGranges.R
-d7b916150a680878e9bb8eb0e481f086 *R/optimize_reference_set.R
-3053f847829498dd2c7b2cbe266b3ee7 *R/plot_CNVs_method.R
+b1260fa4bf5c5318c4578c02daa8b342 *R/optimize_reference_set.R
+865330d629a320df78d53f40bd06b5a9 *R/plot_CNVs_method.R
 5c6ac1dbad02c8a38b665eac51ced06f *R/tools.R
 6490e64fdc1f3062c4f758754866213a *R/zzz.R
 8dbbf737041068cfaa06247323778bbc *data/Conrad.hg19.RData
@@ -11,10 +11,10 @@ d7b916150a680878e9bb8eb0e481f086 *R/optimize_reference_set.R
 a746ad8e8aeb9f096e0ab2c6a4d9f1b1 *data/datalist
 60d73853c76196b1fd944536a527db28 *data/exons.hg19.RData
 17ada08f2862f1bcd40a03df049702c2 *data/exons.hg19.X.RData
-55b3fa1e80eb5510a7c9c110650abeef *inst/doc/ExomeDepth-vignette.Rnw
-67094146e3cab4bbb93b67938185e427 *inst/doc/ExomeDepth-vignette.pdf
+009636366aa142fa874a2668b3268dae *inst/doc/ExomeDepth-vignette.Rnw
+74fa73d51f2359f4e349023144b5248f *inst/doc/ExomeDepth-vignette.pdf
 d93ecfa4323f419e6ed4f57393d9555a *man/AnnotateExtra-methods.Rd
-5bab7e749cb4eff6ce7cd18e609255c9 *man/AnnotateExtra.Rd
+05faa5a354784602c02e363a627d3a8d *man/AnnotateExtra.Rd
 dc4830d53e1e95aeefb12f168152bc52 *man/CallCNVs.Rd
 bda1012f3e67e413d6de8b4f181b3c56 *man/Conrad.hg19.common.CNVs.Rd
 c31769913300124b2dffd5581cb93c38 *man/ExomeCount.Rd
@@ -30,7 +30,7 @@ fdf93eae343843ab3ea459421ca08f51 *man/get.power.betabinom.Rd
 7e38ce99f6063eafb0978c6a4c43c58f *man/plot-methods.Rd
 58f0d632bd58a39a56e279d3d4bcee04 *man/qbetabinom.Rd
 d7c79e701f04d0147d2eca72de3ac03f *man/qbetabinom.ab.Rd
-c03656855f45c17a118a45da1843a8e6 *man/select.reference.set.Rd
+f402aa98f2cd56ebe745901edd8673af *man/select.reference.set.Rd
 5d35612404c0f237450ad0c7897e5401 *man/show-methods.Rd
 c373359850d1271b89a599717e0c9b4d *man/somatic.CNV.call.Rd
 4a1384f27981265c376de95660725aa7 *man/viterbi.hmm.Rd
