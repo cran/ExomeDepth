@@ -16,9 +16,10 @@ countBamInGRanges.exomeDepth(bam.file, index = bam.file, granges, min.mapq = 1, 
   \item{index}{Index of the BAM file, without the '.bai'
     suffix.}
   \item{granges}{Genomic ranges object defining the bins}
-  \item{min.mapq}{Minimum mapping quality}
-  \item{read.width}{Window around the target region to count a read
-    within the bin}
+  \item{min.mapq}{Minimum read mapping quality (Phred scaled).}
+  \item{read.width}{For single end reads, an estimate of the frament
+    size. For paired reads, the fragment size can be directly computed
+    from the paired alignment and this value is ignored.} 
 }
 \details{
   Largely derived from its equivalent function in the exomeCopy package.

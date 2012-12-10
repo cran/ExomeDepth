@@ -1,5 +1,5 @@
 
-setMethod("plot", "ExomeDepth", function(x, sequence, xlim, ylim = c(0, 3), count.threshold = 40, ylab = 'Observed by expected read ratio', xlab = '', type = 'b', pch = '+', with.gene = FALSE, annotations = NULL, col = 'red', ...) {
+setMethod("plot", "ExomeDepth", function(x, sequence, xlim, ylim = NULL, count.threshold = 20, ylab = 'Observed by expected read ratio', xlab = '', type = 'b', pch = '+', with.gene = FALSE, annotations = NULL, col = 'red', ...) {
 
   if (with.gene) {  ##if we want the gene information we add this extra bit
     layout(mat = matrix(data = 1:2, nrow = 2, ncol = 1), widths = c(1, 1), heights = c(2, 1) )
@@ -7,7 +7,7 @@ setMethod("plot", "ExomeDepth", function(x, sequence, xlim, ylim = c(0, 3), coun
   }
 
   anno <- x@annotations
-  selected <-  which(anno$chromosome == sequence & anno$start >= xlim[1] & anno$end <= xlim[2] & x@reference*x@expected > count.threshold)
+  selected <-  which(anno$chromosome == sequence & anno$start >= xlim[1] & anno$end <= xlim[2] & (x@test + x@reference)*x@expected > count.threshold)
   anno <- anno[selected,]
                  
   anno$expected <- x@expected[ selected ]
@@ -29,9 +29,9 @@ setMethod("plot", "ExomeDepth", function(x, sequence, xlim, ylim = c(0, 3), coun
 
   anno$my.min.norm.prop <-   anno$my.min.norm /  anno$total.counts
   anno$my.max.norm.prop <-   anno$my.max.norm /  anno$total.counts
-  
+
   if (is.null(xlim)) xlim <- range(anno$middle)
-  if (is.null(ylim)) ylim <- range(anno$ratio)
+  if (is.null(ylim)) ylim <- c( 0, max( anno$ratio, 1.25*max( anno$my.max.norm.prop/anno$expected, na.rm = TRUE )))
 
   plot (x = NA,
         y = NA,
@@ -70,10 +70,9 @@ setMethod("plot", "ExomeDepth", function(x, sequence, xlim, ylim = c(0, 3), coun
           col = col,
           ...)
 
+  
   if (with.gene) {
 
-    if (is.null(annotations)) annotations <- anno
-    
     message("Plotting the gene data")
     par(mar = c(4,4,0,2))
     
@@ -89,14 +88,37 @@ setMethod("plot", "ExomeDepth", function(x, sequence, xlim, ylim = c(0, 3), coun
     ##### This bit to make sure that the axis is plotted with integer values
     my.pos <- axTicks(side = 1)
     axis(side = 1, at = my.pos, labels = as.integer(my.pos))
+
+
+    ################ Now subset the annotations we want to show
+
     
-    exon.array <- annotations[ annotations$chromosome == sequence & annotations$end > xlim[1] & annotations$start < xlim[2], ]
+    if (is.null(annotations)) {
+      anno <- x@annotations
+      selected <-  which(anno$chromosome == sequence & anno$start >= xlim[1] & anno$end <= xlim[2])
+      selected.2 <- max(min(selected) - 1, 1) :  min( max(selected) + 1, nrow(annotations))   ##complicated line that adds one exon on each side of the window
+      exon.array <- x@annotations[ selected.2,,drop = FALSE]
+    } else {
+      selected <-  which(annotations$chromosome == sequence & anno$start >= xlim[1] & annotations$end <= xlim[2])
+      exon.array <- annotations[ selected.2,,drop = FALSE]
+    }
+    
+
     exon.array$short.name <- gsub(exon.array$name, pattern = '-.*', replacement = '')
+
+### Now if an additional gene was added at either end, remove it
+    if (nrow(exon.array) > 1) {
+      if (exon.array$short.name[1]  != exon.array$short.name[2]) {exon.array <- exon.array[-1, ]}
+      if (exon.array$short.name[ nrow(exon.array)]  != exon.array$short.name[ nrow(exon.array)-1]) {exon.array <- exon.array[-nrow(exon.array), ]}
+    }
+    
     exon.array$start.gene <- tapply(IND = exon.array$short.name, exon.array$start, FUN = min) [ exon.array$short.name ]  
     exon.array$middle <- 0.5*(exon.array$start + exon.array$end)
     exon.array <- exon.array[ exon.array$short.name != 'RP11' &
                              ! grepl(pattern = 'ENST.*', exon.array$short.name) &
                              ! grepl(pattern = 'AC0.*', exon.array$short.name) ,]
+
+
     
     if (nrow(exon.array) >= 1) {
       pos <- 1
