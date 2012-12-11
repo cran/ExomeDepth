@@ -242,8 +242,8 @@ Note the metadata column \texttt{names} which MUST be specified for the annotati
 
 The ExomeDepth object includes a plot function. This function shows the ratio between observed and expected read depth.
 The 95\% confidence interval is marked by a grey shaded area.
-Here we use a common CNV located in the \texttt{RHD} gene as an example. 
-We can see that the individual in question has more copies than the average (in fact two functional copies of RHD, which corresponds to rhesus positive).
+Here we use a common CNV located in the {\it RHD} gene as an example. 
+We can see that the individual in question has more copies than the average (in fact two functional copies of {\it RHD}, which corresponds to rhesus positive).
 
 <<fig = TRUE, echo = TRUE>>=
 plot (all.exons,
