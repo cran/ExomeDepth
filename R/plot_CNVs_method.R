@@ -1,5 +1,5 @@
 
-setMethod("plot", "ExomeDepth", function(x, sequence, xlim, ylim = NULL, count.threshold = 20, ylab = 'Observed by expected read ratio', xlab = '', type = 'b', pch = '+', with.gene = FALSE, annotations = NULL, col = 'red', ...) {
+setMethod("plot", "ExomeDepth", function(x, sequence, xlim, ylim = NULL, count.threshold = 10, ylab = 'Observed by expected read ratio', xlab = '', type = 'b', pch = '+', with.gene = FALSE, annotations = NULL, col = 'red', ...) {
 
   if (with.gene) {  ##if we want the gene information we add this extra bit
     layout(mat = matrix(data = 1:2, nrow = 2, ncol = 1), widths = c(1, 1), heights = c(2, 1) )

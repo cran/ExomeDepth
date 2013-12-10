@@ -1,6 +1,6 @@
 
 
-countBamInGRanges.exomeDepth <- function (bam.file, index = bam.file, granges, min.mapq = 1, read.width = 1)  {
+countBamInGRanges.exomeDepth <- function (bam.file, index = bam.file, granges, min.mapq = 1, read.width = 1, force.single.end = FALSE)  {
 
   rds.counts <- numeric(length(granges))
   seq.names <- seqlevels(granges)
@@ -14,35 +14,53 @@ countBamInGRanges.exomeDepth <- function (bam.file, index = bam.file, granges, m
       strand(granges.subset) <- "*"
 
       empty <- TRUE
-############################################################################# read paired end      
-      rds <- scanBam(file = bam.file,
-                     index = index, 
-                     param = ScanBamParam(flag = scanBamFlag(isDuplicate = FALSE, isPaired = TRUE, isProperPair = TRUE), what = c("mapq", "pos", "isize"), which = range(granges.subset)))
-      mapq.test <- (rds[[1]]$mapq >= min.mapq) & !is.na(rds[[1]]$pos) & (abs(rds[[1]]$isize) < 1000) & (rds[[1]]$isize > 0)
-      #message('----------------- ', seq.name, ' ', length(rds[[1]]$mapq))
+      if (!force.single.end) {
       
-      if (sum(mapq.test) > 0 && !is.na(sum(mapq.test) )) {
-        empty <- FALSE
-        rds.ranges <- GRanges(seq.name, IRanges(start = rds[[1]]$pos[mapq.test], width  = rds[[1]]$isize[mapq.test]))
-        rds.counts.seq.name <- countOverlaps(granges.subset, rds.ranges)
-        rds.counts[as.logical(seqnames(granges) == seq.name)] <- rds.counts.seq.name
-      }
+############################################################################# read paired end
+        rds <- scanBam(file = bam.file,
+                       index = index, 
+                       param = ScanBamParam(flag = scanBamFlag(isDuplicate = FALSE, isPaired = TRUE, isProperPair = TRUE), what = c("mapq", "pos", "isize"), which = range(granges.subset)))
+        mapq.test <- (rds[[1]]$mapq >= min.mapq) & !is.na(rds[[1]]$pos) & (abs(rds[[1]]$isize) < 1000) & (rds[[1]]$isize > 0)
+                                        #message('----------------- ', seq.name, ' ', length(rds[[1]]$mapq))
+        
+        if (sum(mapq.test) > 0 && !is.na(sum(mapq.test) )) {
+          empty <- FALSE
+          rds.ranges <- GRanges(seq.name, IRanges(start = rds[[1]]$pos[mapq.test], width  = rds[[1]]$isize[mapq.test]))
+          rds.counts.seq.name <- countOverlaps(granges.subset, rds.ranges)
+          rds.counts[as.logical(seqnames(granges) == seq.name)] <- rds.counts.seq.name
+        }
 
       ############################################################################# read single end 
-      rds <- scanBam(bam.file,
-                     index = index, 
-                     param = ScanBamParam(flag = scanBamFlag(isDuplicate = FALSE, isPaired = FALSE), what = c("pos", "mapq", "qwidth"), which = range(granges.subset)))
-      mapq.test <- (rds[[1]]$mapq >= min.mapq) & !is.na(rds[[1]]$pos) 
-      
-      if (sum(mapq.test) > 0 && !is.na(sum(mapq.test))) {
-        empty <- FALSE
-        rds.ranges <- GRanges(seq.name, IRanges(start = rds[[1]]$pos[mapq.test] - 0.5*read.width + 0.5*rds[[1]]$qwidth[ mapq.test ], width = read.width))
-        rds.counts.seq.name <- countOverlaps(granges.subset, rds.ranges)
-        rds.counts[as.logical(seqnames(granges) == seq.name)] <- rds.counts.seq.name
+        rds <- scanBam(bam.file,
+                       index = index, 
+                       param = ScanBamParam(flag = scanBamFlag(isDuplicate = FALSE, isPaired = FALSE), what = c("pos", "mapq", "qwidth"), which = range(granges.subset)))
+        mapq.test <- (rds[[1]]$mapq >= min.mapq) & !is.na(rds[[1]]$pos) 
+        
+        if (sum(mapq.test) > 0 && !is.na(sum(mapq.test))) {
+          empty <- FALSE
+          rds.ranges <- GRanges(seq.name, IRanges(start = rds[[1]]$pos[mapq.test] - 0.5*read.width + 0.5*rds[[1]]$qwidth[ mapq.test ], width = read.width))
+          rds.counts.seq.name <- countOverlaps(granges.subset, rds.ranges)
+          rds.counts[as.logical(seqnames(granges) == seq.name)] <- rds.counts.seq.name
+        }
       }
+
+      if (force.single.end) {  ##request to deal with reads in a single end manner
+        rds <- scanBam(bam.file,
+                       index = index,
+                       param = ScanBamParam(flag = scanBamFlag(isDuplicate = FALSE), what = c("pos", "mapq", "qwidth"), which = range(granges.subset)))
+
+        mapq.test <- (rds[[1]]$mapq >= min.mapq) & !is.na(rds[[1]]$pos)
+        if (sum(mapq.test) > 0 && !is.na(sum(mapq.test))) {
+          empty <- FALSE
+          rds.ranges <- GRanges(seq.name, IRanges(start = rds[[1]]$pos[mapq.test] - 0.5*read.width + 0.5*rds[[1]]$qwidth[ mapq.test ], width = read.width))
+          rds.counts.seq.name <- countOverlaps(granges.subset, rds.ranges)
+          rds.counts[as.logical(seqnames(granges) == seq.name)] <- rds.counts.seq.name
+        }
+      }
+      
 ######################
       if (empty) rds.counts[as.logical(seqnames(granges) == seq.name)] <- 0  ## do I need that?
-      #message('Sequence ', seq.name, ' ',  rds.counts[as.logical(seqnames(granges) == seq.name)], '\n')
+                                        #message('Sequence ', seq.name, ' ',  rds.counts[as.logical(seqnames(granges) == seq.name)], '\n')
     }
   }
   rds.counts
@@ -51,10 +69,7 @@ countBamInGRanges.exomeDepth <- function (bam.file, index = bam.file, granges, m
 
 
 getBamCounts <- function(bed.frame = NULL, bed.file = NULL, bam.files, index.files = bam.files,
-                         min.mapq = 20, read.width = 300, include.chr = FALSE, referenceFasta = NULL) {
-  require(GenomicRanges)
-  require(Rsamtools)
-  
+                         min.mapq = 20, read.width = 300, include.chr = FALSE, referenceFasta = NULL, force.single.end = FALSE) {
   if (is.null(bed.frame)) {
     if (is.null(bed.file)) {
       stop("If no bed data frame is provided there must be a link to a bed file")
@@ -108,7 +123,8 @@ getBamCounts <- function(bed.frame = NULL, bed.file = NULL, bam.files, index.fil
                                                              index = index,
                                                              target,
                                                              min.mapq = min.mapq,
-                                                             read.width = read.width)
+                                                             read.width = read.width,
+                                                             force.single.end = force.single.end)
   }
 
   return(rdata)
