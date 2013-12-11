@@ -2,7 +2,6 @@
 
 
 qbetabinom <- function(p, size, phi, prob) {  ##parameterize with phi, prob instead of a,b
-  require(VGAM)
   a <- prob*(1-phi)/phi
   b <- (1-prob)*(1-phi)/phi
   return( qbetabinom.ab (p = p, size = size, shape1 = a, shape2 = b)  )
@@ -10,7 +9,6 @@ qbetabinom <- function(p, size, phi, prob) {  ##parameterize with phi, prob inst
 
 
 qbetabinom.ab <- function (p, size, shape1, shape2)  {
-  require(VGAM)
   my.p <- dbetabinom.ab(x = 0:size, , size = size, shape1 = shape1, shape2 = shape2)
   cs <- cumsum(my.p)
   above <- which(cs > p)[1]
@@ -41,9 +39,7 @@ viterbi.hmm <- function(transitions, loglikelihood, positions) {
 
 
 get.power.betabinom <- function (size, my.phi, my.p, my.alt.p, theory = FALSE, frequentist = FALSE, limit = FALSE) {
-  require(VGAM)
 
-  
   my.alt.phi <- my.phi
   
   my.a <- my.p * (1 - my.phi)/my.phi

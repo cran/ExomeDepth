@@ -36,10 +36,9 @@ setMethod("initialize", "ExomeDepth", function(.Object,
     data <- data[ subset.for.speed, , drop = FALSE]
   }
 
-  require(aod)
   message('Now fitting the beta-binomial model: this step can take a few minutes.')
     if (phi.bins == 1) {
-      mod <- betabin( data = data, formula = as.formula(formula), random = ~ 1, link = 'logit')
+      mod <- aod::betabin( data = data, formula = as.formula(formula), random = ~ 1, link = 'logit')
       .Object@phi <- rep(mod@param[[ 'phi.(Intercept)']], nrow(data))
     } else {
       ceiling.bin <- quantile(reference, probs = c( 0.85, 1) )
@@ -228,8 +227,6 @@ setGeneric("AnnotateExtra", def = function(x, reference.annotation, min.overlap 
 
 setMethod("AnnotateExtra", "ExomeDepth", function( x, reference.annotation, min.overlap, column.name) {
 
-  require('GenomicRanges')
-  
   if (packageVersion('GenomicRanges') < '1.8.10') {
     warning('The AnnotateExtra function requires a more recent version of the GenomicRanges package (>= 1.8.10). The easiest way to install is probably to use R version >  2.15 and the bioconductor scripts. This function will therefore annotate the same object without the added annotations')
     return(x)

@@ -15,7 +15,8 @@ index.files = bam.files,
 min.mapq = 20,
 read.width = 300,
 include.chr = FALSE,
-referenceFasta = NULL)
+referenceFasta = NULL,
+force.single.end = FALSE)
 }
 %- maybe also 'usage' for other objects documented here.
 \arguments{
@@ -50,7 +51,12 @@ referenceFasta = NULL)
   \item{referenceFasta}{
     \code{character}, file name for the reference genome in fasta
     format. If available, GC content will be computed and added to the
-    output.} 
+    output.}
+  \item{force.single.end}{Treat all paired reads as single end. It is
+    generally a bad idea but may be useful in some rare situations. Do
+    not use this option if you do not have a very good reason and you
+    know what you are doing. The main issue is that paired reads mapping
+    to the same region will be counted twice.}
 }
 \details{
   This function is largely a copy of a similar one available in the
@@ -72,6 +78,6 @@ load(exons.hg19)
 
 my.counts <- getBamCounts(bed.frame = exonpos,
                           bam.files = my.bam,
-                          referenceFasta = '/ugi/home/shared/vincent/reference_genome/fasta/human_g1k_v37.fasta')  
+                          referenceFasta = 'human_g1k_v37.fasta')  
 } 
 }

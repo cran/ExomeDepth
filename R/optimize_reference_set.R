@@ -9,22 +9,27 @@ select.reference.set <- function(test.counts, reference.counts, bin.length = NUL
   
   if (class(reference.counts) != 'matrix') stop('The reference sequence count data must be provided as a matrix')
   if (nrow(reference.counts) != length(test.counts)) stop("The number of rows of the reference matrix must match the length of the test count data\n")
-  if (is.null(bin.length)) bin.length <- rep(1, length(selected))
+  if (is.null(bin.length)) bin.length <- rep(1, length(test.counts))
+  
   
   n.ref.samples <- ncol(reference.counts)
 
   ############ select the subset of bins which will be used for the selection of the reference set
   total.counts <- apply(reference.counts, MARGIN = 1, FUN = sum) + test.counts
-  selected <- which(total.counts > 30 & bin.length > 0)
+  my.quantiles <- quantile(total.counts [ which(total.counts > 30) ], prob = c(0.1, 0.9))
+  
+  selected <- which(total.counts > 30 & bin.length > 0 & total.counts < my.quantiles[2])
   if ( (n.bins.reduced < length(selected)) && (n.bins.reduced > 0) ) selected <- selected[ seq(1, length(selected), length(selected) / n.bins.reduced) ]
 
+
   test.counts <- test.counts[ selected ]
+
+
   reference.counts <- reference.counts[ selected, , drop = FALSE ]
   bin.length <- bin.length[ selected]
   if (!is.null(data)) data <- data[ selected, ]
   n.bins <- length(selected)
   message('Number of selected bins: ', n.bins)
-
 
   ############### Now sort the data according to the correlation
   my.correlations <- apply(reference.counts, MARGIN = 2, FUN = function(x) {cor(x/(bin.length*sum(x)/10^6), test.counts/(bin.length*sum(test.counts)/10^6))})
