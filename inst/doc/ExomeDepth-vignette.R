@@ -144,7 +144,7 @@ all.exons@CNV.calls[3:6,]
 
 
 ###################################################
-### code chunk number 16: ExomeDepth-vignette.Rnw:269-275
+### code chunk number 16: ExomeDepth-vignette.Rnw:280-286
 ###################################################
 plot (all.exons,
       sequence = '1',
@@ -216,7 +216,18 @@ plot (all.exons,
 
 
 ###################################################
-### code chunk number 18: session
+### code chunk number 18: everted (eval = FALSE)
+###################################################
+## data(genes.hg19)
+## everted <- count.everted.reads (bed.frame = genes.hg19,
+##                                bam.files = bam.files.list,
+##                                min.mapq = 20,
+##                                include.chr = FALSE)
+## 
+
+
+###################################################
+### code chunk number 19: session
 ###################################################
 sessionInfo()
 

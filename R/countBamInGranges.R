@@ -1,5 +1,35 @@
 
+################################################################################################################################################ low level function for everted reads
 
+countBam.everted <- function(bam.file, granges, index = bam.file, min.mapq = 1) {
+
+  rds.counts <- numeric(length(granges))
+  seq.names <- seqlevels(granges)
+  seq.names.in.bam <- names(scanBamHeader(bam.file)[[1]]$targets)
+
+  message('Parsing ', bam.file, ' with index ', index)
+  
+  rds <- scanBam(file = bam.file,
+                 index = index, 
+                 param = ScanBamParam(flag = scanBamFlag(isDuplicate = FALSE, isPaired = TRUE, isProperPair = FALSE), what = c("rname", "strand", "isize", "mapq", "pos", "isize")))[[1]]
+
+  mapq.test <- (!is.na(rds$isize)) & (rds$mapq >= min.mapq) & !is.na(rds$pos) & (abs(rds$isize) < 100000) & ( ((rds$strand == "+") & (rds$isize < 0) ) | ((rds$strand == "-") & (rds$isize > 0) ) )
+  mapq.test <- mapq.test[  !is.na(mapq.test) ]
+
+  if (sum(mapq.test) > 0) {
+    empty <- FALSE
+    
+    reads.ranges <- GRanges ( seqnames = rds$rname[ mapq.test],
+                            IRanges(start = pmin( rds$pos[ mapq.test ], rds$pos[ mapq.test ] + rds$isize [mapq.test]) , end =  pmax( rds$pos[ mapq.test ], rds$pos[ mapq.test ] + rds$isize [mapq.test])),
+                            strand = rds$strand[ mapq.test ])
+    
+    rds.counts <- countOverlaps(granges, reads.ranges)
+  }
+  rds.counts      
+}
+
+
+################################################################################################################################################ low level function for read depth
 countBamInGRanges.exomeDepth <- function (bam.file, index = bam.file, granges, min.mapq = 1, read.width = 1, force.single.end = FALSE)  {
 
   rds.counts <- numeric(length(granges))
@@ -68,6 +98,10 @@ countBamInGRanges.exomeDepth <- function (bam.file, index = bam.file, granges, m
 
 
 
+
+
+##########################################################################################################################################################  master function for exomeDepth read counting
+
 getBamCounts <- function(bed.frame = NULL, bed.file = NULL, bam.files, index.files = bam.files,
                          min.mapq = 20, read.width = 300, include.chr = FALSE, referenceFasta = NULL, force.single.end = FALSE) {
   if (is.null(bed.frame)) {
@@ -93,14 +127,14 @@ getBamCounts <- function(bed.frame = NULL, bed.file = NULL, bam.files, index.fil
   
   rdata <- RangedData(space=seqnames(target),
                       ranges=ranges(target))
-
+  
   if  ((ncol(bed.frame) >= 4) && (class(bed.frame[,4]) %in% c('character', 'factor'))) {    
     row.names(rdata) <- make.unique(as.character(bed.frame[,4]))  ##add exon names if available
   }
   
 ############################################################################# add GC content
-  if (!is.null(referenceFasta)) {
-    message('Reference fasta file provided so exomeDepth will compute the GC content in each window')
+if (!is.null(referenceFasta)) {
+  message('Reference fasta file provided so exomeDepth will compute the GC content in each window')
     target.dnastringset <- scanFa(referenceFasta, target)
   
     getGCcontent <- function(x) {
@@ -119,14 +153,64 @@ getBamCounts <- function(bed.frame = NULL, bed.file = NULL, bam.files, index.fil
   for (i in 1:nfiles) {
     bam <- bam.files[ i ]
     index <- index.files[ i ]
-    rdata[[ basename(bam) ]] <- countBamInGRanges.exomeDepth(bam,
+    
+    rdata[[ basename(bam) ]] <- countBamInGRanges.exomeDepth(bam.file = bam,
                                                              index = index,
-                                                             target,
+                                                             granges = target,
                                                              min.mapq = min.mapq,
                                                              read.width = read.width,
                                                              force.single.end = force.single.end)
   }
-
   return(rdata)
 }
+
+
+
+
+
+##########################################################################################################################################################  master function for exomeDepth everted.count
+count.everted.reads <- function(bed.frame = NULL,
+                                bed.file = NULL,
+                                bam.files,
+                                index.files = bam.files,
+                                min.mapq = 20,
+                                include.chr = FALSE) {
+
+  if (is.null(bed.frame)) {
+    if (is.null(bed.file)) {
+      stop("If no bed data frame is provided there must be a link to a bed file")
+    }
+    bed.frame <- read.delim(file = bed.file, header =  FALSE, stringsAsFactors = FALSE)
+  }
+
+  names(bed.frame)[1] <- 'seqnames'
+  names(bed.frame)[2] <- 'start'
+  names(bed.frame)[3] <- 'end'
+
   
+  if (include.chr) bed.frame$seqnames <- paste('chr', bed.frame$seqnames, sep = '')
+
+  target <- GRanges(seqnames = bed.frame$seqnames,  
+                    IRanges(start=bed.frame$start+1,end=bed.frame$end))
+  rdata <- RangedData(space=seqnames(target),
+                      ranges=ranges(target))
+  
+  if  ((ncol(bed.frame) >= 4) && (class(bed.frame[,4]) %in% c('character', 'factor'))) {    
+    row.names(rdata) <- make.unique(as.character(bed.frame[,4]))  ##add exon names if available
+  }
+
+  nfiles <- length(bam.files)
+  for (i in 1:nfiles) {
+    bam <- bam.files[ i ]
+    index <- index.files[ i ]
+
+    rdata[[ basename(bam) ]] <- countBam.everted (bam.file = bam,
+                                                  index = index,
+                                                  granges = target,
+                                                  min.mapq = min.mapq)
+  }
+
+  rdata <- as.data.frame(rdata)
+  names(rdata)[[1]] <- 'chromosome'
+  return (rdata)
+}
