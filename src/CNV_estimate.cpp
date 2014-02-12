@@ -74,7 +74,10 @@ SEXP get_loglike_matrix (const SEXP phi_a, const SEXP expected_a, const SEXP tot
     
     rans[cnv + nCNVs*0] =   myprob ( expected[ cnv ]*odds_del/ ( expected[ cnv ]*odds_del + 1 - expected[ cnv ] ), bestSd, total[ cnv ], observed[ cnv]);
     rans[cnv + nCNVs*1] =   myprob ( expected[ cnv ], bestSd, total[ cnv ], observed[ cnv]);
-    rans[cnv + nCNVs*2] =   myprob ( expected[ cnv ]*odds_dup/ ( expected[ cnv ]*odds_dup + 1 - expected[ cnv ] )  , bestSd, total[ cnv ], observed[ cnv]);
+    rans[cnv + nCNVs*2] =   myprob ( expected[ cnv ]*odds_dup/ ( expected[ cnv ]*odds_dup + 1 - expected[ cnv ] ), bestSd, total[ cnv ], observed[ cnv]);
+
+    
+
   }
   UNPROTECT(1);
   

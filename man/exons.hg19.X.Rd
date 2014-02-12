@@ -10,7 +10,7 @@
 }
 \usage{data(exons.hg19)}
 \format{
-  A data frame with 243765 observations on the following 4 variables.
+  A data frame of exons with the following 4 variables.
   \describe{
     \item{\code{chromosome}}{a factor with levels \code{X} \code{Y}}
     \item{\code{start}}{a numeric vector}
@@ -19,6 +19,6 @@
   }
 }
 \source{
-  Ensemble database version 61.
+  Ensemble database version 71.
 }
 \keyword{datasets}

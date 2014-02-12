@@ -14,6 +14,17 @@
 
 \tableofcontents
 
+\section{What is new?}
+
+Version 1.0.0:
+\begin{itemize}
+\item New warning when the correlation between the test and reference samples is low, so that the user knows he should expect unreliable results.
+\item New function to count everted reads (characteristic of segmental duplications)
+\item Updated \texttt{genes.hg19} and \texttt{exons.hg19} objects. The number of exons tested is now 10\% lower, because it excludes some non coding regions as well as UTRs that are typically not well covered. My test data suggest that removing these difficult regions cleans up the signal quite a bit and the quality of established CNVs calls has improved significantly as a consequence of this. 
+\end{itemize}
+
+
+
 \section{What ExomeDepth does and tips for QC}
 
 \subsection{What ExomeDepth does and does not do}
@@ -341,6 +352,31 @@ for (i in 1:nsamples) {
 
 
 @
+
+\section{Counting everted reads}
+
+This issue of everted reads (read pairs pointing outward instead of inward) is a side story that has nothing to do with read depth.
+It is based on a ``read pair'' analysis but it was practical for me (and I hope for others) to write simple functions to find such a pattern in my exome data.
+The motivation is that everted reads are characteristic of tandem duplications, which could be otherwised by ExomeDepth.
+I have argued before that such a paired end approach is not well suited for exome sequence data, because the reads must be located very close to the junction of interest.
+This is not very likely to happen if one only sequences 1\% of the genome (i.e. the exome).
+However, experience shows that these reads can sometimes be found, and it can be effective at identifying duplications.
+The function below will return a data frame with the number of everted reads in each gene.
+More documentation is needed on this, and will be added in later versions.
+But it is a useful additional screen to pick up segmental duplications.
+
+<<everted, eval = FALSE>>=
+data(genes.hg19)
+everted <- count.everted.reads (bed.frame = genes.hg19,
+                               bam.files = bam.files.list,
+                               min.mapq = 20,
+                               include.chr = FALSE)
+
+@
+
+Note the option \texttt{include.chr = FALSE} is you aligned your reads to the NCBI version of the reference genome (i.e. chromosome denoted as 1,2, \dots) but set to \texttt{TRUE} if you used the UCSC reference genome (i.e. chromosomes denoted as chr1, chr2, \dots). As a filtering step one probably wants to look in the resulting table for genes that show no everted reads in the vast majority of samples, with the exception of a few cases where a duplication may be rare but real.
+
+
 
 
 \section{Technical information about R session}
