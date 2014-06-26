@@ -1,7 +1,7 @@
 Package: ExomeDepth
 Type: Package
 Title: Calls CNV from exome sequence data
-Version: 1.0.0
+Version: 1.0.5
 Date: 2014-2-6
 Depends: R (>= 2.15.0), methods, aod, VGAM (>= 0.8.4), GenomicRanges
         (>= 1.8.10), Rsamtools
@@ -9,7 +9,7 @@ Author: Vincent Plagnol
 Maintainer: Vincent Plagnol <v.plagnol@ucl.ac.uk>
 Description: Calls copy number variants (CNVs) from targeted sequence data
 License: GPL-3
-Packaged: 2014-02-11 23:54:50 UTC; ucbtvyp
+Packaged: 2014-06-26 19:54:27 UTC; ucbtvyp
 NeedsCompilation: yes
 Repository: CRAN
-Date/Publication: 2014-02-12 12:05:32
+Date/Publication: 2014-06-26 23:48:07
