@@ -144,7 +144,7 @@ all.exons@CNV.calls[3:6,]
 
 
 ###################################################
-### code chunk number 16: ExomeDepth-vignette.Rnw:289-295
+### code chunk number 16: ExomeDepth-vignette.Rnw:294-300
 ###################################################
 plot (all.exons,
       sequence = '1',
