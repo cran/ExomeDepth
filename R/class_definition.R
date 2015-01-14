@@ -64,7 +64,7 @@ setMethod("initialize", "ExomeDepth", function(.Object,
         stop('Binning did not happen properly')
       }
       
-      mod <- betabin (data = data.for.fit, formula = as.formula(formula), random = as.formula('~ depth.quant'),  link = 'logit', warnings = FALSE)
+      mod <- aod::betabin (data = data.for.fit, formula = as.formula(formula), random = as.formula('~ depth.quant'),  link = 'logit', warnings = FALSE)
       phi.estimates <-  as.numeric(mod@random.param)
       data$phi <-  phi.estimates[  data$depth.quant ]
   
@@ -201,16 +201,20 @@ setMethod("CallCNVs", "ExomeDepth", function( x, chromosome, start, end, name, t
     loc.test <- x@test[ good.pos ]
     loc.total <- total[ good.pos ]
     positions <- loc.annotations$start
+    end.positions <- loc.annotations$end       #end position of targeted exons to be used when adding a dummy exon at the end of the chromosome.
     
-    loc.likelihood <-  rbind(c(- Inf, 0, -Inf), x@likelihood[good.pos, c(2, 1, 3)]) ##add a dummy exon so that we start at cn = 2 (normal)
+    ##loc.likelihood <-  rbind(c(- Inf, 0, -Inf), x@likelihood[good.pos, c(2, 1, 3)]) ##add a dummy exon so that we start at cn = 2 (normal)
+    loc.likelihood <- rbind(c(- Inf, 0, -Inf), x@likelihood[good.pos, c(2, 1, 3)],c(-100,0,-100)) ##update from Anna Fowler add a dummy exon so that we start at cn = 2 (normal) and a dummy exon at the end of the chromosome as well so that it ends at cn=2; for some reason I had to use -100 instead of -Inf
+    
     my.calls <- viterbi.hmm (transitions, loglikelihood = loc.likelihood,
-                             positions = as.integer(c(positions[1] - 2*expected.CNV.length, positions)),
+                             positions = as.integer(c(positions[1] - 2*expected.CNV.length, positions,end.positions[length(end.positions)]+2*expected.CNV.length)),   #include position of new dummy exon          
                              expected.CNV.length = expected.CNV.length)
 
     my.calls$calls$start.p <- my.calls$calls$start.p -1  ##remove the dummy exon, which has now served its purpose
     my.calls$calls$end.p <- my.calls$calls$end.p -1  ##remove the dummy exon, which has now served its purpose
-    loc.likelihood <- loc.likelihood[ -1, c(2,1, 3) ]  ##remove the dummy exon, which has now served its purpose
-
+    #loc.likelihood <- loc.likelihood[ -1, c(2,1, 3) ]  ##remove the dummy exon, which has now served its purpose
+    loc.likelihood <- loc.likelihood[ -c(1,nrow(loc.likelihood)), c(2,1, 3) ] ##remove both of the dummy exons, which have now served their purpose
+    
   ################################ Now make it look better, add relevant info
     if (nrow(my.calls$calls) > 0) {
 
@@ -294,7 +298,7 @@ setMethod("AnnotateExtra", "ExomeDepth", function( x, reference.annotation, min.
   my.calls.GRanges <- GRanges(seqnames = x@CNV.calls$chromosome,
                               IRanges(start=x@CNV.calls$start,end= x@CNV.calls$end))
   
-  test <- findOverlaps(query = my.calls.GRanges, subject = reference.annotation)
+  test <- GenomicRanges::findOverlaps(query = my.calls.GRanges, subject = reference.annotation)
   test <- data.frame(calls = test@queryHits, ref = test@subjectHits)
   
 ###add info about the CNV calls
@@ -310,7 +314,7 @@ setMethod("AnnotateExtra", "ExomeDepth", function( x, reference.annotation, min.
   test$overlap <- pmin (test$callsref.end, test$call.end) -  pmax( test$call.start, test$callsref.start)
   test <- test[ test$overlap > min.overlap*(test$call.end - test$call.start), ]
   
-  my.split <-  split(as.character(elementMetadata(reference.annotation)$names)[ test$ref], f = test$calls)
+  my.split <-  split(as.character(GenomicRanges::elementMetadata(reference.annotation)$names)[ test$ref], f = test$calls)
   my.overlap.frame <- data.frame(call = names(my.split),  target = sapply(my.split, FUN = paste, collapse = ','))
   my.overlap.frame <- data.frame(call = names(my.split),  target = sapply(my.split, FUN = paste, collapse = ','))
   
