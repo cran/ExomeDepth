@@ -1,7 +1,7 @@
-68c2f89f6dabb874ff5bf5fc18e0c9f2 *DESCRIPTION
-de00cf3187357ccdfdf2371176e0fada *NAMESPACE
+600721d6c49b01070f386444e0bcaab1 *DESCRIPTION
+f71a6b22088f815b1458523c2c745aa4 *NAMESPACE
 765cd989f3e150de32fb77e55c6d91e2 *R/class_definition.R
-e89ea1c46d1f6fa4eda8f8caff2551e9 *R/countBamInGranges.R
+8655283b4c536cda7372b49c964ade54 *R/countBamInGranges.R
 027b3ae5010c1637989da822e50cc92d *R/optimize_reference_set.R
 3d025b654263376f4da370a4e7e72174 *R/plot_CNVs_method.R
 b623b27fe6c824dfb557e7943874a9d9 *R/tools.R
@@ -14,8 +14,8 @@ d36e7f0d1af103b82d1859f9f7679d2b *data/datalist
 ced691ffd030cb71e74be3f51f4d30f7 *data/exons.hg19.X.RData
 c8d468f05d7a6385eccd92ceb8af35f3 *data/genes.hg19.RData
 f8a329fe7a6c669e2435305a7edf1bbd *inst/doc/ExomeDepth-vignette.R
-0107274a8143bd8590c47ae588ee9320 *inst/doc/ExomeDepth-vignette.Rnw
-49c71fa2bfaaed8aa4a02a871f9082ba *inst/doc/ExomeDepth-vignette.pdf
+360de754a7806eb0e1d9ef8e41cf944c *inst/doc/ExomeDepth-vignette.Rnw
+c04c9a6a57e945e1cfce2f2dc6493b8e *inst/doc/ExomeDepth-vignette.pdf
 d93ecfa4323f419e6ed4f57393d9555a *man/AnnotateExtra-methods.Rd
 05faa5a354784602c02e363a627d3a8d *man/AnnotateExtra.Rd
 9bc80527a8dfdca88b0914f249ba575f *man/CallCNVs.Rd
@@ -26,12 +26,12 @@ fcb68836c5c282b93f94f1a7ea03e5e3 *man/ExomeDepth-class.Rd
 13c53166a7805c5dfd1d50b15697f7d7 *man/TestCNV.Rd
 2ba50d106909cb1d09c597d075a65544 *man/count.everted.reads.Rd
 76bde6e843c76460317f0d1790d9970d *man/countBam.everted.Rd
-7a959e6d0a759201d6d9189c2392eaf6 *man/countBamInGRanges.exomeDepth.Rd
+3222dbbed59516756562406b0c4e38ad *man/countBamInGRanges.exomeDepth.Rd
 8f93fde6a115bcfe7e1443981967f8be *man/exons.hg19.Rd
 00cc6ea54a6e4b2246a57282121a24b2 *man/exons.hg19.X.Rd
 de63c855a17286d2b2d081a26438deab *man/genes.hg19.Rd
 fdf93eae343843ab3ea459421ca08f51 *man/get.power.betabinom.Rd
-c4db01e3a0ace73bab30edefcd970d3f *man/getBamCounts.Rd
+d13648db5bb04f533f350c32b55ae8dd *man/getBamCounts.Rd
 7e44c47c43609059b228c98ea478e2c3 *man/initialize-methods.Rd
 df929aeee6eb32b194697c4a18674619 *man/plot.ExomeDepth.Rd
 58f0d632bd58a39a56e279d3d4bcee04 *man/qbetabinom.Rd
@@ -85,4 +85,4 @@ fd5c21b122661b0eede120f1e217ccac *src/hmm.cpp
 c5c0d5946bc875288b18b0b6a79d77d4 *src/log1p.c
 97d3d5ccb1fd0a9d8939d44126400117 *src/math.c
 7c29496ab57de6d6ed92c32e14aa6bc8 *src/stream.c
-0107274a8143bd8590c47ae588ee9320 *vignettes/ExomeDepth-vignette.Rnw
+360de754a7806eb0e1d9ef8e41cf944c *vignettes/ExomeDepth-vignette.Rnw
