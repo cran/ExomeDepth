@@ -1,5 +1,5 @@
-1d704063e1e0ad44f5f3c9cd97907553 *DESCRIPTION
-e1bfc0f067682a4312b58117237774b8 *NAMESPACE
+45e8d5b7b759f3fa6627d2a8800f5edb *DESCRIPTION
+56d52093b9c773e937831f74f4497627 *NAMESPACE
 043f5deed034f82884ed7d1eda11c7f4 *R/class_definition.R
 8655283b4c536cda7372b49c964ade54 *R/countBamInGranges.R
 027b3ae5010c1637989da822e50cc92d *R/optimize_reference_set.R
@@ -14,8 +14,8 @@ d36e7f0d1af103b82d1859f9f7679d2b *data/datalist
 835d4ea639ceaf437bd619c0e2ff9857 *data/exons.hg19.X.RData
 edd41cdfab222d7dee1b06e7014e72cc *data/genes.hg19.RData
 f8a329fe7a6c669e2435305a7edf1bbd *inst/doc/ExomeDepth-vignette.R
-fce656ddd770e02a208c4a2cb5d89a4c *inst/doc/ExomeDepth-vignette.Rnw
-2180cbfa9c286b5d82511ea4989e1edb *inst/doc/ExomeDepth-vignette.pdf
+0c9dda9e8d52d5ca5cff5a7812318c61 *inst/doc/ExomeDepth-vignette.Rnw
+a09e90c0a989d876747b7458fa144ab8 *inst/doc/ExomeDepth-vignette.pdf
 d93ecfa4323f419e6ed4f57393d9555a *man/AnnotateExtra-methods.Rd
 05faa5a354784602c02e363a627d3a8d *man/AnnotateExtra.Rd
 9bc80527a8dfdca88b0914f249ba575f *man/CallCNVs.Rd
@@ -85,4 +85,4 @@ fd5c21b122661b0eede120f1e217ccac *src/hmm.cpp
 c5c0d5946bc875288b18b0b6a79d77d4 *src/log1p.c
 97d3d5ccb1fd0a9d8939d44126400117 *src/math.c
 7c29496ab57de6d6ed92c32e14aa6bc8 *src/stream.c
-fce656ddd770e02a208c4a2cb5d89a4c *vignettes/ExomeDepth-vignette.Rnw
+0c9dda9e8d52d5ca5cff5a7812318c61 *vignettes/ExomeDepth-vignette.Rnw
