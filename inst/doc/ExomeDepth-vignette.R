@@ -13,8 +13,8 @@ print(head(exons.hg19))
 ## ----Rsamtools.load------------------------------------------------------
 library(ExomeDepth)
 data(ExomeCount)
-ExomeCount.dafr <- as(ExomeCount[,  colnames(ExomeCount)], 'data.frame')
-ExomeCount.dafr$chromosome <- gsub(as.character(ExomeCount.dafr$space), 
+ExomeCount.dafr <- as(ExomeCount, 'data.frame')
+ExomeCount.dafr$chromosome <- gsub(as.character(ExomeCount.dafr$seqnames), 
                                         pattern = 'chr', 
                                         replacement = '')  ##remove the annoying chr letters
 print(head(ExomeCount.dafr))
@@ -58,7 +58,7 @@ all.exons <- new('ExomeDepth',
 ## ----call.CNVs-----------------------------------------------------------
 all.exons <- CallCNVs(x = all.exons, 
                       transition.probability = 10^-4, 
-                      chromosome = ExomeCount.dafr$space, 
+                      chromosome = ExomeCount.dafr$chromosome, 
                       start = ExomeCount.dafr$start, 
                       end = ExomeCount.dafr$end, 
                       name = ExomeCount.dafr$names)
@@ -143,7 +143,7 @@ plot (all.exons,
 #  ################ Now call the CNVs
 #    all.exons <- CallCNVs(x = all.exons,
 #                          transition.probability = 10^-4,
-#                          chromosome = ExomeCount.dafr$space,
+#                          chromosome = ExomeCount.dafr$chromosome,
 #                          start = ExomeCount.dafr$start,
 #                          end = ExomeCount.dafr$end,
 #                          name = ExomeCount.dafr$names)
