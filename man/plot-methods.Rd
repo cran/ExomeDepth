@@ -9,10 +9,20 @@
 \alias{plot,ExomeDepth-method}
 \title{Plotting function for ExomeDepth objects}
 \usage{
-\S4method{plot}{ExomeDepth,ANY}(x, sequence, xlim, ylim = NULL,
-  count.threshold = 10, ylab = "Observed by expected read ratio",
-  xlab = "", type = "b", pch = "+", with.gene = FALSE,
-  col = "red", ...)
+\S4method{plot}{ExomeDepth,ANY}(
+  x,
+  sequence,
+  xlim,
+  ylim = NULL,
+  count.threshold = 10,
+  ylab = "Observed by expected read ratio",
+  xlab = "",
+  type = "b",
+  pch = "+",
+  with.gene = FALSE,
+  col = "red",
+  ...
+)
 }
 \arguments{
 \item{x}{ExomeDepth object}

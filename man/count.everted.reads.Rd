@@ -4,8 +4,14 @@
 \alias{count.everted.reads}
 \title{Count the number of everted reads for a set of BAM files.}
 \usage{
-count.everted.reads(bed.frame = NULL, bed.file = NULL, bam.files,
-  index.files = bam.files, min.mapq = 20, include.chr = FALSE)
+count.everted.reads(
+  bed.frame = NULL,
+  bed.file = NULL,
+  bam.files,
+  index.files = bam.files,
+  min.mapq = 20,
+  include.chr = FALSE
+)
 }
 \arguments{
 \item{bed.frame}{\code{data.frame} containing the definition of the regions.

@@ -4,9 +4,16 @@
 \alias{getBamCounts}
 \title{Get count data for multiple exomes}
 \usage{
-getBamCounts(bed.frame = NULL, bed.file = NULL, bam.files,
-  index.files = bam.files, min.mapq = 20, read.width = 300,
-  include.chr = FALSE, referenceFasta = NULL)
+getBamCounts(
+  bed.frame = NULL,
+  bed.file = NULL,
+  bam.files,
+  index.files = bam.files,
+  min.mapq = 20,
+  read.width = 300,
+  include.chr = FALSE,
+  referenceFasta = NULL
+)
 }
 \arguments{
 \item{bed.frame}{\code{data.frame} containing the definition of the regions.

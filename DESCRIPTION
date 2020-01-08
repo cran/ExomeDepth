@@ -1,8 +1,8 @@
 Package: ExomeDepth
 Type: Package
 Title: Calls Copy Number Variants from Targeted Sequence Data
-Version: 1.1.12
-Date: 2019-08-29
+Version: 1.1.15
+Date: 2019-12-23
 Encoding: UTF-8
 Depends: R (>= 3.4.0)
 Imports: Biostrings, IRanges, Rsamtools, GenomicRanges (>= 1.23.0),
@@ -14,9 +14,9 @@ Authors@R: c(person("Vincent", "Plagnol", role = c("aut", "cre"), email = "v.pla
 Maintainer: Vincent Plagnol  <v.plagnol@ucl.ac.uk>
 Description: Calls copy number variants (CNVs) from targeted sequence data, typically exome sequencing experiments designed to identify the genetic basis of Mendelian disorders.
 License: GPL-3
-RoxygenNote: 6.1.1
+RoxygenNote: 7.0.2
 NeedsCompilation: yes
-Packaged: 2019-08-29 22:17:32 UTC; vincent
+Packaged: 2019-12-31 20:58:43 UTC; vincent
 Author: Vincent Plagnol [aut, cre]
 Repository: CRAN
-Date/Publication: 2019-08-30 07:00:03 UTC
+Date/Publication: 2020-01-09 00:50:02 UTC

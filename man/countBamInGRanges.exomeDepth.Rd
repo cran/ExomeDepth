@@ -4,8 +4,13 @@
 \alias{countBamInGRanges.exomeDepth}
 \title{Compute read count data from BAM files.}
 \usage{
-countBamInGRanges.exomeDepth(bam.file, index = bam.file, granges,
-  min.mapq = 1, read.width = 1)
+countBamInGRanges.exomeDepth(
+  bam.file,
+  index = bam.file,
+  granges,
+  min.mapq = 1,
+  read.width = 1
+)
 }
 \arguments{
 \item{bam.file}{BAM file to be parsed}

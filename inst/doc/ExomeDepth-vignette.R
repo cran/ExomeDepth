@@ -1,16 +1,16 @@
-## ----exons---------------------------------------------------------------
+## ----exons--------------------------------------------------------------------
 library(ExomeDepth)
 data(exons.hg19)
 print(head(exons.hg19))
 
-## ----read.count, eval=FALSE----------------------------------------------
+## ----read.count, eval=FALSE---------------------------------------------------
 #  data(exons.hg19)
 #  my.counts <- getBamCounts(bed.frame = exons.hg19,
 #                            bam.files = my.bam,
 #                            include.chr = FALSE,
 #                            referenceFasta = fasta)
 
-## ----Rsamtools.load------------------------------------------------------
+## ----Rsamtools.load-----------------------------------------------------------
 library(ExomeDepth)
 data(ExomeCount)
 ExomeCount.dafr <- as(ExomeCount, 'data.frame')
@@ -19,11 +19,11 @@ ExomeCount.dafr$chromosome <- gsub(as.character(ExomeCount.dafr$seqnames),
                                         replacement = '')  ##remove the annoying chr letters
 print(head(ExomeCount.dafr))
 
-## ----<read.count---------------------------------------------------------
+## ----<read.count--------------------------------------------------------------
 data(exons.hg19.X)
 head(exons.hg19.X)
 
-## ----first.test----------------------------------------------------------
+## ----first.test---------------------------------------------------------------
 test <- new('ExomeDepth',
             test = ExomeCount.dafr$Exome2,
             reference = ExomeCount.dafr$Exome3,
@@ -32,7 +32,7 @@ test <- new('ExomeDepth',
 
 show(test)
 
-## ----reference.selection-------------------------------------------------
+## ----reference.selection------------------------------------------------------
 my.test <- ExomeCount$Exome4
 my.ref.samples <- c('Exome1', 'Exome2', 'Exome3')
 my.reference.set <- as.matrix(ExomeCount.dafr[, my.ref.samples])
@@ -43,19 +43,19 @@ my.choice <- select.reference.set (test.counts = my.test,
 
 print(my.choice[[1]])
 
-## ----construct.ref-------------------------------------------------------
+## ----construct.ref------------------------------------------------------------
 my.matrix <- as.matrix( ExomeCount.dafr[, my.choice$reference.choice, drop = FALSE])
 my.reference.selected <- apply(X = my.matrix, 
                                MAR = 1, 
                                FUN = sum)
 
-## ----build.complete------------------------------------------------------
+## ----build.complete-----------------------------------------------------------
 all.exons <- new('ExomeDepth',
                  test = my.test,
                  reference = my.reference.selected,
                  formula = 'cbind(test, reference) ~ 1')
 
-## ----call.CNVs-----------------------------------------------------------
+## ----call.CNVs----------------------------------------------------------------
 all.exons <- CallCNVs(x = all.exons, 
                       transition.probability = 10^-4, 
                       chromosome = ExomeCount.dafr$chromosome, 
@@ -64,32 +64,32 @@ all.exons <- CallCNVs(x = all.exons,
                       name = ExomeCount.dafr$names)
 head(all.exons@CNV.calls)
 
-## ----write.results, eval = FALSE-----------------------------------------
+## ----write.results, eval = FALSE----------------------------------------------
 #  output.file <- 'exome_calls.csv'
 #  write.csv(file = output.file,
 #            x = all.exons@CNV.calls,
 #            row.names = FALSE)
 
-## ----ranking-------------------------------------------------------------
+## ----ranking------------------------------------------------------------------
 head(all.exons@CNV.calls[ order ( all.exons@CNV.calls$BF, decreasing = TRUE),])
 
-## ----Conrad--------------------------------------------------------------
+## ----Conrad-------------------------------------------------------------------
 data(Conrad.hg19)
 head(Conrad.hg19.common.CNVs)
 
-## ----check.chr-----------------------------------------------------------
+## ----check.chr----------------------------------------------------------------
 levels(GenomicRanges::seqnames(Conrad.hg19.common.CNVs))
 
-## ----anno.extra----------------------------------------------------------
+## ----anno.extra---------------------------------------------------------------
 all.exons <- AnnotateExtra(x = all.exons,
                            reference.annotation = Conrad.hg19.common.CNVs,
                            min.overlap = 0.5,
                            column.name = 'Conrad.hg19')
 
-## ----anno.check----------------------------------------------------------
+## ----anno.check---------------------------------------------------------------
 print(head(all.exons@CNV.calls))
 
-## ----prep.GRanges--------------------------------------------------------
+## ----prep.GRanges-------------------------------------------------------------
 exons.hg19.GRanges <- GenomicRanges::GRanges(seqnames = exons.hg19$chromosome,
                                     IRanges::IRanges(start=exons.hg19$start,end=exons.hg19$end),
                                     names = exons.hg19$name)
@@ -99,7 +99,7 @@ all.exons <- AnnotateExtra(x = all.exons,
                            column.name = 'exons.hg19')
 all.exons@CNV.calls[3:6,]
 
-## ----echo = TRUE, fig.width = 4, fig.height = 4--------------------------
+## ----echo = TRUE, fig.width = 4, fig.height = 4-------------------------------
 plot (all.exons,
       sequence = '1',
       xlim = c(25598981 - 100000, 25633433 + 100000),
@@ -108,7 +108,7 @@ plot (all.exons,
       cex.lab = 0.8,
       with.gene = TRUE)
 
-## ----loop, eval=FALSE----------------------------------------------------
+## ----loop, eval=FALSE---------------------------------------------------------
 #  
 #  #### get the annotation datasets to be used later
 #  data(Conrad.hg19)
@@ -166,7 +166,7 @@ plot (all.exons,
 #  
 #  
 
-## ----everted, eval = FALSE-----------------------------------------------
+## ----everted, eval = FALSE----------------------------------------------------
 #  data(genes.hg19)
 #  everted <- count.everted.reads (bed.frame = genes.hg19,
 #                                 bam.files = bam.files.list,
@@ -174,6 +174,6 @@ plot (all.exons,
 #                                 include.chr = FALSE)
 #  
 
-## ----session-------------------------------------------------------------
+## ----session------------------------------------------------------------------
 sessionInfo()
 

@@ -4,8 +4,7 @@
 \alias{somatic.CNV.call}
 \title{somatic.CNV.call}
 \usage{
-somatic.CNV.call(normal, tumor, prop.tumor = 1, chromosome, start, end,
-  names)
+somatic.CNV.call(normal, tumor, prop.tumor = 1, chromosome, start, end, names)
 }
 \arguments{
 \item{normal}{Read count data (numeric vector) for the normal tissue.}

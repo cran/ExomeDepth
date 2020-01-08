@@ -4,8 +4,15 @@
 \alias{get.power.betabinom}
 \title{Estimate the power to compare two beta-binomial distributions.}
 \usage{
-get.power.betabinom(size, my.phi, my.p, my.alt.p, theory = FALSE,
-  frequentist = FALSE, limit = FALSE)
+get.power.betabinom(
+  size,
+  my.phi,
+  my.p,
+  my.alt.p,
+  theory = FALSE,
+  frequentist = FALSE,
+  limit = FALSE
+)
 }
 \arguments{
 \item{size}{Number of samples from the beta-binomial distribution.}

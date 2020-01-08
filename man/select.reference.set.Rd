@@ -5,9 +5,15 @@
 \title{Combine multiple samples to optimize the reference set in order to maximise
 the power to detect CNV.}
 \usage{
-select.reference.set(test.counts, reference.counts, bin.length = NULL,
-  n.bins.reduced = 0, data = NULL,
-  formula = "cbind(test, reference) ~ 1", phi.bins = 1)
+select.reference.set(
+  test.counts,
+  reference.counts,
+  bin.length = NULL,
+  n.bins.reduced = 0,
+  data = NULL,
+  formula = "cbind(test, reference) ~ 1",
+  phi.bins = 1
+)
 }
 \arguments{
 \item{test.counts}{Read count data for the test sample (numeric, typically a
