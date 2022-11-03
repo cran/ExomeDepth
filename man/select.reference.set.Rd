@@ -60,3 +60,14 @@ can be maximised if the most appropriate set of sequences is used as
 reference. This function is designed to combine multiple reference exomes in
 order to build the best reference set.
 }
+\examples{
+
+data(ExomeCount)
+ref_counts <- matrix(data = c(ExomeCount$Exome2, ExomeCount$Exome3, ExomeCount$Exome4),
+                    ncol = 3, byrow = FALSE)
+colnames(ref_counts) <- c("Ex1", "Ex2", "Ex3")
+
+select.reference.set(test.counts = ExomeCount$Exome1[1:200],
+                    reference.counts = ref_counts[1:200,])
+
+}

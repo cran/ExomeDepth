@@ -4,13 +4,15 @@
 \name{genes.hg19}
 \alias{genes.hg19}
 \title{Positions of genes on build hg19 of the human genome}
-\format{A data frame with 18,033 observations on the following 4 variables:
+\format{
+A data frame with 18,033 observations on the following 4 variables:
 \itemize{
 \item chromosome, a factor with levels \code{1}, \code{2} \code{3} \code{4}, \code{5} \code{6} \code{7} \code{8} \code{9}, \code{10} \code{11} \code{12} \code{13} \code{14} \code{15} \code{16} \code{17} \code{18} \code{19} \code{2} \code{20} \code{21} \code{22}
 \item start a numeric vector
 \item end a numeric vector
 \item name A character vector of names for the exon(s)
-}}
+}
+}
 \source{
 Ensemble database version 71.
 }

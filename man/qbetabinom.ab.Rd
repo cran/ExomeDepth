@@ -21,6 +21,9 @@ A quantile of the distribution.
 \description{
 Standard qbetabinomial.ab function which is missing from the VGAM package.
 }
+\examples{
+qbetabinom.ab(p = 0.5, size = 50, shape1 = 0.2, shape2 = 0.25)
+}
 \seealso{
 \code{VGAM} package.
 }

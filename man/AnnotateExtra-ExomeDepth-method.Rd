@@ -12,7 +12,8 @@
 
 \item{reference.annotation}{The list of reference annotations in GRanges format.}
 
-\item{min.overlap}{Numeric, defaults to 0.5. This defines the minimum fraction of the CNV call that is covered by the reference call to declare that there is a significant overlap.}
+\item{min.overlap}{Numeric, defaults to 0.5. This defines the minimum fraction of
+the CNV call that is covered by the reference call to declare that there is a significant overlap.}
 
 \item{column.name}{The name of the column used to store the overlap (in the slot CNV.calls).}
 }
@@ -27,4 +28,24 @@ This function takes annotations in the GRanges format and adds these to the CNV 
 the ExomeDepth object.
 Note that a recent version of \verb{GenomicRanges (> 1.8.10)} is required. Otherwise the
 function will return a warning and not update the ExomeDepth object.
+}
+\examples{
+
+data(ExomeCount)  #pick an example count file
+small_count <- ExomeCount[1:100, ]  #reduce the size for speedy computations
+## create a dummy test object
+example_object <- new('ExomeDepth', test = small_count$Exome2, reference = small_count$Exome3)
+
+## artifically create a couple of CNV calls for this test
+example_object@CNV.calls <- data.frame(chromosome = c(1,7),
+                                       start = c(108778622, 61286538),
+                                       end = c(109000909,61296735))
+
+data(Conrad.hg19)
+print(example_object@CNV.calls)
+example_object_annotated <- AnnotateExtra(x = example_object,
+                             reference.annotation = Conrad.hg19.common.CNVs,
+                             min.overlap = 0.1,
+                             column.name = 'Conrad.hg19')
+print(example_object_annotated@CNV.calls)
 }

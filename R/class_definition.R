@@ -14,10 +14,18 @@
 #' only used if the `formula` argument refers to covariates (in which case
 #' these covariates must be included in the data frame).  `test` and
 #' `reference` refer to the read count data for the test and reference
-#' samples.  Creating a ExomeDepth object will automatically fit the
+#' samples.
+#'
+#' Critically, it is not required to store the positions of the DNA fragments
+#' that led to the test and reference counts. That is only required for the
+#' function `TestCNV`. If this is of use, a GRanges object can be provided
+#' using the argument `positions`.
+#'
+#' Creating a ExomeDepth object will automatically fit the
 #' beta-binomial model (using routines from the `aod` package) and compute
 #' the likelihood for the three copy number states (normal, deletion and
 #' duplication).
+#'
 #' @seealso `?select.reference.set` `?CallCNVs`
 #' @references A robust model for read count data in exome sequencing experiments and implications for copy number variant calling, Plagnol et al 2012
 #' @keywords classes
@@ -33,6 +41,7 @@ setClass("ExomeDepth",
                         phi = "numeric",
                         likelihood = "matrix",
                         annotations = "data.frame",
+                        positions = "GRanges",
                         CNV.calls = "data.frame"))
 
 
@@ -50,7 +59,22 @@ setClass("ExomeDepth",
 #' @param prop.tumor Numeric, defaults to 1. For the somatic variant calling, this assesses the proportion of the test sample data originating from the tumour.
 #' Do not modify this parameter for the standard use of ExomeDepth.
 #' @param subset.for.speed Numeric, defaults to NULL. If non-null, this sets the number of data points to be used for an accelerated fit of the data.
+#' @param positions Optional GRanges argument specifying the positions of the exons (or DNA regions) where the reads were counted for test and reference.
 #' @param verbose Logical, controls the output level.
+#' @return An ExomeDepth object, which contains the CNV calls after running a Viterbi algorithm.
+#' @examples
+#'
+#' data(ExomeCount)  #pick an example count file
+#' small_count <- ExomeCount[1:100, ]  #reduce the size for speedy computations
+#'
+#' ## remove exons without data below
+#' small_count <- small_count[ small_count$Exome2 + small_count$Exome3 > 0, ]
+#'
+#' example_object <- new('ExomeDepth', test = small_count$Exome2,
+#'                                     reference = small_count$Exome3,
+#'                                     formula = 'cbind(test, reference) ~ 1')
+#' print(example_object)
+#' print( mean(example_object@expected)) ## proportion of reads expected to match the test set
 
 
 
@@ -62,6 +86,7 @@ setMethod("initialize", "ExomeDepth", function(.Object,
                                                phi.bins = 1,
                                                prop.tumor = 1,
                                                subset.for.speed = NULL,
+                                               positions = GenomicRanges::GRanges(),
                                                verbose = TRUE) {
   if (length(test) != length(reference)) stop("Length of test and numeric must match")
 
@@ -69,6 +94,7 @@ setMethod("initialize", "ExomeDepth", function(.Object,
     message('It looks like the test samples has only ', sum(test > 5), ' bins with more than 5 reads. The coverage is too small to perform any meaningful inference so no likelihood will be computed.')
     return(.Object)
   }
+
 
   n.data.points <- length(test)
   if (is.null(data)) data <- data.frame(intercept = rep(1, length(test)))
@@ -79,7 +105,7 @@ setMethod("initialize", "ExomeDepth", function(.Object,
 
   if (!is.null(subset.for.speed)) {
 
-    if ( (class(subset.for.speed) == 'numeric') && (length(subset.for.speed) == 1)) {subset.for.speed <- seq(from = 1, to = nrow(data), by = floor( nrow(data) / subset.for.speed ) )}  ###deals with unexpected use of subset.for.speed
+    if ( is.numeric(subset.for.speed) && (length(subset.for.speed) == 1)) {subset.for.speed <- seq(from = 1, to = nrow(data), by = floor( nrow(data) / subset.for.speed ) )}  ###deals with unexpected use of subset.for.speed
     subset.for.speed <- subset.for.speed[ subset.for.speed %in% 1:nrow(data) ] ##make sure we do not select non-existing rows
     data.for.fit <- data[ subset.for.speed, , drop = FALSE]
   } else {
@@ -88,7 +114,7 @@ setMethod("initialize", "ExomeDepth", function(.Object,
 
   if (verbose) message('Now fitting the beta-binomial model on a data frame with ', nrow(data.for.fit), ' rows : this step can take a few minutes.')
     if (phi.bins == 1) {
-      mod <- aod::betabin( data = data.for.fit, formula = as.formula(formula), random = ~ 1, link = 'logit', warnings = FALSE)
+      mod <- aod::betabin(data = data.for.fit, formula = as.formula(formula), random = ~ 1, link = 'logit', warnings = FALSE)
       .Object@phi <- rep(mod@param[[ 'phi.(Intercept)']], n.data.points)
     } else {
       if (!is.null(subset.for.speed)) {stop('Subset for speed option is not compatible with variable phi. This will be fixed later on but for now please adapt your code.')}
@@ -97,17 +123,22 @@ setMethod("initialize", "ExomeDepth", function(.Object,
       complete.bins <- as.numeric(c(bottom.bins, ceiling.bin[2] + 1))
       data$depth.quant <- factor(sapply(reference, FUN = function(x) {sum (x >= complete.bins)}))
 
-############# a check
+      ## a check
       my.tab <-  table(data$depth.quant)
       if (length(my.tab) != phi.bins) {
         stop('Binning did not happen properly')
       }
 
-      mod <- aod::betabin (data = data.for.fit, formula = as.formula(formula), random = as.formula('~ depth.quant'),  link = 'logit', warnings = FALSE)
+      mod <- aod::betabin (data = data.for.fit,
+                           formula = as.formula(formula),
+                           random = as.formula('~ depth.quant'),
+                           link = 'logit',
+                           warnings = FALSE)
+
       phi.estimates <-  as.numeric(mod@random.param)
       data$phi <-  phi.estimates[  data$depth.quant ]
 
-#### Now the linear interpolation
+      ## Now the linear interpolation for phi, the over-dispersion parameter
       fc <- approxfun (x = c(complete.bins[ 1:phi.bins] + complete.bins[ 2:(phi.bins+1)])/2, y =  phi.estimates, yleft = phi.estimates[1], yright = phi.estimates[phi.bins])
       data$phi.linear <- fc (reference)
 
@@ -116,14 +147,24 @@ setMethod("initialize", "ExomeDepth", function(.Object,
 
 
 
+  .Object@positions <- positions
   .Object@formula <- formula
   .Object@test <- test
   .Object@reference <- reference
   my.coeffs <- mod@fixed.param
 
 
+  ## if positions were provided, check that they match the expected length
+  if (length(.Object@positions) > 0) {
+      if (length(.Object@positions) != length(test)) {
+          stop("The provided genomic positions (GRanges object) and test count vector are not matching in length: ", length(.Object@positions), ", ", length(test))
+      }
+  }
+
   if (is.null(subset.for.speed)) {
-    .Object@expected <- aod::fitted(mod)
+      ## looks like a bug in model.matrix(mt, mfb, contrasts) in aod::fitted
+      ## so suppressing warnings below
+      .Object@expected <- suppressWarnings(aod::fitted(mod))
   } else {
     intercept <- my.coeffs[[ '(Intercept)' ]]
     .Object@expected <- rep(intercept, times = nrow(data))
@@ -178,21 +219,38 @@ setGeneric("TestCNV", def = function(x, chromosome, start, end, type) standardGe
 #' @param start Numeric, start of the tested CNV
 #' @param end Numeric, end of the tested CNV
 #' @param type Character, must be either `deletion` or `duplication`.
-
+#' @return A single numeric value that is the log likelihood ratio in favour of a call present at this location.
+#' @examples
+#' data(ExomeCount)
+#' ExomeCount <- ExomeCount[1:500,] ## small for the purpose of this test
+#' ref_counts <- ExomeCount$Exome2 + ExomeCount$Exome3 + ExomeCount$Exome4
+#'
+#' ## creates a simple ExomeDepth object
+#' ## Note that I include the positions here (GRanges format)
+#' ## This is necessary for TestCNV to work
+#' test_object <- new('ExomeDepth', test = ExomeCount$Exome1,
+#'                                  reference = ref_counts,
+#'                                  positions = ExomeCount)
+#'
+#' ## A positive control first
+#' TestCNV (test_object, chromosome = 'chr1', start = 1387428, end = 1405539, type = 'deletion')
+#'
+#' ## And a region without evidence of call
+#' TestCNV (test_object, chromosome = 'chr1', start = 987428, end = 1005539, type = 'deletion')
+#'
 
 setMethod("TestCNV", "ExomeDepth", function(x, chromosome, start, end, type) {
   if (! type %in% c('deletion', 'duplication')) stop("type must be either duplication or deletion\n")
   if (length(chromosome) != 1 || length(start) != 1 || length(end) != 1 || length(type) != 1) stop("The arguments chromosome, start, end and type must all be of length 1")
-  if (class(chromosome) == 'factor') chromosome <- as.character(chromosome)
-  if (class(chromosome) != 'character') stop('The input chromosome must be a character or a factor')
+  if (is.factor(chromosome)) chromosome <- as.character(chromosome)
+  if (!is.character(chromosome)) stop('The input chromosome must be a character or a factor')
 
+  if (length(x@positions) == 0) stop("This function cannot be used if the position of the exons/DNA segments was not included in the ExomeDepth object")
 
-
-  which.exons <- which((x@annotations$chromosome == chromosome) & (x@annotations$start >= start) & (x@annotations$end <= end))
+  which.exons <- which(as.logical( (GenomicRanges::seqnames(x@positions) == chromosome) & (GenomicRanges::start(x@positions) >= start) & (GenomicRanges::end(x@positions) <= end)))
 
   if (type == 'deletion') log.ratio <- sum(x@likelihood[ which.exons, 1] - x@likelihood[ which.exons, 2])
   if (type == 'duplication') log.ratio <- sum(x@likelihood[ which.exons, 3] - x@likelihood[ which.exons, 2])
-
   return  (log.ratio)
 })
 
@@ -207,12 +265,10 @@ setGeneric("CallCNVs",
 #' @description Call CNV data from an ExomeDepth object.
 #' @md
 #'
-#' @details The function must be called on an ExomeDepth object.
+#' @details Must be called on an ExomeDepth object and fits a hidden Markov model to the read depth data with three hidden states (normal, deletion, duplication).
 #' Likelihood data must have been pre-computed which should have been done by default when the ExomeDepth object was created.
 #'
-#' This function fits a hidden Markov model to the read depth data with three
-#' hidden states (normal, deletion, duplication).
-#'
+
 #' @param x An `ExomeDepth` object
 #' @param chromosome Chromosome information for each exon (factor).
 #' @param start Start (physical position) of each exon (numeric, must have the
@@ -229,6 +285,25 @@ setGeneric("CallCNVs",
 #' exons.
 #' @return The same ExomeDepth object provided as input but with the slot
 #' CNVcalls containing a data frame with the output of the calling.
+#' @examples
+#'
+#' data(ExomeCount)
+#' ExomeCount <- ExomeCount[1:500,] ## small for the purpose of this test
+#' ref_counts <- ExomeCount$Exome2 + ExomeCount$Exome3 + ExomeCount$Exome4
+#'
+#' ## creates a simple ExomeDepth object
+#' test_object <- new('ExomeDepth', test = ExomeCount$Exome1, reference = ref_counts)
+#'
+#' ## Call CNVs
+#' called_object <- CallCNVs(x = test_object, transition.probability = 10^-4,
+#'                          chromosome = GenomicRanges::seqnames(ExomeCount),
+#'                          start = GenomicRanges::start(ExomeCount),
+#'                          end = GenomicRanges::end(ExomeCount),
+#'                          name = ExomeCount$names)
+#'
+#'
+#' print(called_object@CNV.calls)
+#'
 
 
 
@@ -287,7 +362,8 @@ setMethod("CallCNVs", "ExomeDepth", function( x, chromosome, start, end, name, t
     ##loc.likelihood <-  rbind(c(- Inf, 0, -Inf), x@likelihood[good.pos, c(2, 1, 3)]) ##add a dummy exon so that we start at cn = 2 (normal)
     loc.likelihood <- rbind(c(- Inf, 0, -Inf), x@likelihood[good.pos, c(2, 1, 3)],c(-100,0,-100)) ##update from Anna Fowler add a dummy exon so that we start at cn = 2 (normal) and a dummy exon at the end of the chromosome as well so that it ends at cn=2; for some reason I had to use -100 instead of -Inf
 
-    my.calls <- viterbi.hmm (transitions, loglikelihood = loc.likelihood,
+    my.calls <- viterbi.hmm (transitions,
+                             loglikelihood = loc.likelihood,
                              positions = as.integer(c(positions[1] - 2*expected.CNV.length, positions,end.positions[length(end.positions)]+2*expected.CNV.length)),   #include position of new dummy exon
                              expected.CNV.length = expected.CNV.length)
 
@@ -303,8 +379,9 @@ setMethod("CallCNVs", "ExomeDepth", function( x, chromosome, start, end, name, t
       my.calls$calls$end <- loc.annotations$end[ my.calls$calls$end.p ]
       my.calls$calls$chromosome <- as.character(loc.annotations$chromosome[ my.calls$calls$start.p ])
 
-      my.calls$calls$id <- paste('chr', my.calls$calls$chromosome, ':',  my.calls$calls$start, '-',  my.calls$calls$end, sep = '')
-      my.calls$calls$type <- c('deletion', 'duplication')[ my.calls$calls$type ]
+        my.calls$calls$id <- paste('chr', my.calls$calls$chromosome, ':',  my.calls$calls$start, '-',  my.calls$calls$end, sep = '')
+        my.calls$calls$id <- gsub(pattern = "chrchr", replacement = "chr", my.calls$calls$id) ## in case the user already included chr
+        my.calls$calls$type <- c('deletion', 'duplication')[ my.calls$calls$type ]
 
 ########## make things pretty
       my.calls$calls$BF <- NA
@@ -389,6 +466,7 @@ somatic.CNV.call <- function(normal, tumor, prop.tumor = 1, chromosome, start, e
 #' @title get_loglike_matrix
 #' @name  get_loglike_matrix
 #' @description Computes the loglikelihood matrix for the three states and each exon
+#' @return A likelihood matrix with the states as rows and the exons as columns
 
 NULL
 
@@ -396,6 +474,7 @@ NULL
 
 #' @title C_hmm
 #' @name C_hmm
-#' @description Implements the hidden Markov Model using a C routine
+#' @description Implements the hidden Markov model (Viterbi algorithm) using a C routine
+#' @return A list with two objects: the first contains the optimum Viterbi path and the second the actual CNV calls
 
 NULL

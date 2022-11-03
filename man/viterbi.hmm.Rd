@@ -14,18 +14,33 @@ under the possible states}
 
 \item{positions}{Positions of the exons}
 
-\item{expected.CNV.length}{Expected length of CNV calls, which has an impact
-on the transition matrix between CNV states.}
+\item{expected.CNV.length}{Expected length of CNV calls, which impacts
+the transition matrix between CNV states.}
 }
 \value{
-\item{comp1 }{Description of 'comp1'} \item{comp2 }{Description of
-'comp2'}
+A list with the two slots `Viterbi.path` and `calls`.
 }
 \description{
 Estimates the most likely path for a hidden Markov Chain using the maximum
 likelihood Viterbi algorithm.
+The code assumes 3 states (normal, deletion and duplication). It is also setup for the
+first and last exons to be at position 0 (i.e. normal).
 }
 \details{
 Standard forward-backward Viterbi algorithm using a precomputed matrix of
 likelihoods.
+}
+\examples{
+transitions <- matrix(data = 1/3, ncol = 3, nrow = 3)
+loglikelihood <- matrix(c(rep(c(0, -10, -10), 3),
+                          rep(c(-10, -10, 0), 3),
+                          rep(c(-10, 0, -10), 4)), nrow = 3)
+## note the final 0 state, enforced by the code
+viterbi.hmm(transitions, t(loglikelihood), positions = 1:10, expected.CNV.length = 1)
+
+## Now we cannot transition out of 0 and should have no call
+transitions <- matrix(c(1, 0, 0, 0, 1, 0, 0, 0, 1), ncol = 3)
+
+## we can check that no call is made
+viterbi.hmm(transitions, t(loglikelihood), positions = 1:10, expected.CNV.length = 1)
 }

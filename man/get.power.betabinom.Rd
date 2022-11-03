@@ -38,3 +38,7 @@ An expected Bayes factor.
 \description{
 A power study useful in the context of ExomeDepth.
 }
+\examples{
+get.power.betabinom(size = 200, my.phi = 0.1, my.p = 0.2, my.alt.p = 0.6)
+get.power.betabinom(size = 200, my.phi = 0.1, my.p = 0.2, my.alt.p = 0.2)
+}

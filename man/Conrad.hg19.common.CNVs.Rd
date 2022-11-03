@@ -4,7 +4,9 @@
 \name{Conrad.hg19.common.CNVs}
 \alias{Conrad.hg19.common.CNVs}
 \title{Conrad et al common CNVs}
-\format{A data frame with common CNV calls.}
+\format{
+A data frame with common CNV calls.
+}
 \source{
 Conrad et al, Origins and functional impact of copy number variation in the human genome, Nature 2010
 }

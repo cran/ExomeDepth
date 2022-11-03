@@ -104,6 +104,17 @@ NULL
 #' @param min.mapq Minimum mapping quality to include reads.
 #' @return A list with the number of reads in each bin.
 #' @seealso count.everted.reads
+#' @examples
+#'
+#' data(genes.hg19)
+#' bam_file <- system.file('extdata/minimum_1_25630000_25650000.bam',
+#'                         package = 'ExomeDepth')
+#' genes.hg19.small <- subset(genes.hg19, grepl(pattern = '^TTC34|^RHD', genes.hg19[['name']]))
+#' my_range <- GenomicRanges::GRanges(paste0(genes.hg19.small$chromosome, ":",
+#'                        genes.hg19.small$start, '-', genes.hg19.small$end))
+#' print(my_range)
+#' print(countBam.everted (granges = my_range, bam.file = bam_file, min.mapq = 0))
+#
 
 
 countBam.everted <- function(bam.file, granges, index = bam.file, min.mapq = 1) {
@@ -113,14 +124,14 @@ countBam.everted <- function(bam.file, granges, index = bam.file, min.mapq = 1) 
 
   rds <- Rsamtools::scanBam(file = bam.file,
                  index = index,
-                 param =Rsamtools::ScanBamParam(flag = Rsamtools::scanBamFlag(isDuplicate = FALSE, isPaired = TRUE, isProperPair = FALSE, isSecondaryAlignment = FALSE), what = c("rname", "strand", "isize", "mapq", "pos", "isize")))[[1]]
+                 param =Rsamtools::ScanBamParam(flag = Rsamtools::scanBamFlag(isDuplicate = FALSE, isPaired = TRUE, isProperPair = FALSE, isSecondaryAlignment = FALSE),
+                                                what = c("rname", "strand", "isize", "mapq", "pos", "isize")))[[1]]
 
   mapq.test <- (!is.na(rds$isize)) & (rds$mapq >= min.mapq) & !is.na(rds$pos) & (abs(rds$isize) < 100000) & ( ((rds$strand == "+") & (rds$isize < 0) ) | ((rds$strand == "-") & (rds$isize > 0) ) )
   mapq.test <- mapq.test[  !is.na(mapq.test) ]
 
   if (sum(mapq.test, na.rm = TRUE) > 0) {
     empty <- FALSE
-
     reads.ranges <- GenomicRanges::GRanges ( seqnames = rds$rname[ mapq.test],
                             IRanges::IRanges(start = pmin( rds$pos[ mapq.test ], rds$pos[ mapq.test ] + rds$isize [mapq.test]) , end =  pmax( rds$pos[ mapq.test ], rds$pos[ mapq.test ] + rds$isize [mapq.test])),
                             strand = rds$strand[ mapq.test ])
@@ -147,10 +158,24 @@ countBam.everted <- function(bam.file, granges, index = bam.file, min.mapq = 1) 
 #' paired reads, the fragment size can be directly computed from the paired
 #' alignment and this value is ignored.
 #' @return A GRanges object with count data.
+#' @examples
+#'
+#' minimum_bam_file <- system.file('extdata/minimum_1_25630000_25650000.bam',
+#'                                 package = 'ExomeDepth')
+#'
+#' data(exons.hg19)
+#' exons.hg19.RHD <- subset(exons.hg19, grepl(pattern = '^RHD', exons.hg19[['name']]))
+#' my_range <- GenomicRanges::GRanges(paste0(exons.hg19.RHD$chromosome, ":",
+#'                        exons.hg19.RHD$start, '-', exons.hg19.RHD$end))
+#'
+#' print(countBamInGRanges.exomeDepth(bam.file = minimum_bam_file,
+#'                             granges = my_range))
+#'
+
 
 countBamInGRanges.exomeDepth <- function (bam.file, index = bam.file, granges, min.mapq = 1, read.width = 1) {
   message("Now parsing ", bam.file)
-  if (class(granges) != "GRanges") stop("Argument granges of countBamInGRanges.exomeDepth must be of the class GRanges")
+  if (!is(granges, "GRanges")) stop("Argument granges of countBamInGRanges.exomeDepth must be of the class GRanges")
 
   if (is.null(index)) index <- bam.file
 
@@ -173,9 +198,9 @@ countBamInGRanges.exomeDepth <- function (bam.file, index = bam.file, granges, m
 
 #####  second check for consistency between BAM and target regions
   if (sum(! seqs.in.target %in% seqs.in.bam.file)) {  ### if some sequences are missing
-    print("Problematic sequences:")
-    print(seqs.in.bam.file)
-    print( seqs.in.target [ ! seqs.in.target %in% seqs.in.bam.file ])
+    warning("Problematic sequences:")
+    warning(seqs.in.bam.file)   ## not sure warning is appropriate here- used to be print
+    warning( seqs.in.target [ ! seqs.in.target %in% seqs.in.bam.file ])  ## not sure warning is appropriate here- used to be print
     stop("Some sequences in the target data frame cannot be found in the index of the BAM file")
   }
 
@@ -261,13 +286,13 @@ countBamInGRanges.exomeDepth <- function (bam.file, index = bam.file, granges, m
 #' @references exomeCopy R package.
 #' @examples
 #'
-#' \dontrun{
-#' load(exons.hg19)
-#'
-#' my.counts <- getBamCounts(bed.frame = exonpos,
-#'                           bam.files = my.bam,
-#'                           referenceFasta = 'human_g1k_v37.fasta')
-#' }
+#' data(exons.hg19)
+#' exons.hg19.RHD <- subset(exons.hg19, grepl(pattern = '^RHD', exons.hg19[['name']]))
+#' minimum_bam_file <- system.file('extdata/minimum_1_25630000_25650000.bam',
+#'                                 package = 'ExomeDepth')
+#' my_counts <- getBamCounts(bed.frame = exons.hg19.RHD,
+#'                           bam.files = minimum_bam_file)
+#' print(my_counts)
 #'
 
 getBamCounts <- function(bed.frame = NULL, bed.file = NULL, bam.files, index.files = bam.files,
@@ -285,10 +310,10 @@ getBamCounts <- function(bed.frame = NULL, bed.file = NULL, bam.files, index.fil
   names(bed.frame)[3] <- 'end'
 
   if (include.chr) {
-    if (sum(grepl(pattern = '^chr', bed.frame$seqnames) > 0)) {
+    if (sum(grepl(pattern = '^chr', bed.frame[['seqnames']]) > 0)) {
       warning('The option include.chr == TRUE adds the chr prefix to the chromosome name but it looks like the chromosome names already have a chr prefix. The argument to getBamCounts is probably an error.')
     }
-    bed.frame$seqnames <- paste('chr', bed.frame$seqnames, sep = '')
+    bed.frame$seqnames <- paste('chr', bed.frame[['seqnames']], sep = '')
   }
 
   chr.names.used <- unique(as.character(bed.frame$seqnames))
@@ -301,7 +326,8 @@ getBamCounts <- function(bed.frame = NULL, bed.file = NULL, bam.files, index.fil
                     IRanges::IRanges(start=bed.frame$start+1,end=bed.frame$end))
 
   if  ((ncol(bed.frame) >= 4) && (class(bed.frame[,4]) %in% c('character', 'factor'))) {
-      GenomicRanges::values(target) <- cbind(GenomicRanges::values(target), data.frame(exon = as.character(bed.frame[,4]),stringsAsFactors = FALSE))
+      GenomicRanges::values(target) <- cbind(GenomicRanges::values(target),
+                                             data.frame(exon = as.character(bed.frame[,4]),stringsAsFactors = FALSE))
   }
 
 ############################################################################# add GC content
@@ -382,17 +408,17 @@ if (!is.null(referenceFasta)) {
 #' @note This function calls a lower level function called XXX that works on
 #' each single BAM file.
 #' @seealso getBAMCounts
-#' @references Computational methods for discovering structural variation with
-#' next-generation sequencing, Medvedev P, Stanciu M, Brudno M., Nature Methods
-#' 2009
+#' @references Medvedev et al (2009) <https://doi.org/10.1038/nmeth.1374>
+#' "Computational methods for discovering structural variation with
+#' next-generation sequencing"
 #' @examples
 #'
-#' \dontrun{  test <- count.everted.reads (bed.frame = genes.hg19,
-#'   bed.file = NULL,
-#'   bam.files = bam.files,
-#'   min.mapq = 20,
-#'   include.chr = FALSE)
-#' }
+#' data(genes.hg19)
+#' bam_file <- system.file('extdata/minimum_1_25630000_25650000.bam',
+#'                         package = 'ExomeDepth')
+#' genes.hg19.TTC <- subset(genes.hg19, grepl(pattern = '^TTC34', genes.hg19[['name']]))
+#' print(count.everted.reads (bed.frame = genes.hg19.TTC, bam.files = bam_file, min.mapq = 0))
+#' print(count.everted.reads (bed.frame = genes.hg19.TTC, bam.files = bam_file, min.mapq = 35))
 #'
 
 count.everted.reads <- function(bed.frame = NULL,
@@ -432,7 +458,7 @@ count.everted.reads <- function(bed.frame = NULL,
   for (i in 1:nfiles) {
     bam <- bam.files[ i ]
     index <- index.files[ i ]
-    exon_count_frame[[ basename(bam) ]] <- countBam.everted (bam.file = bam,  ## replace old RangedData with GRanges
+    exon_count_frame[[ basename(bam) ]] <- countBam.everted (bam.file = bam,
                                                   index = index,
                                                   granges = target,
                                                   min.mapq = min.mapq)

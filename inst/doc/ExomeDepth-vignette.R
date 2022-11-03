@@ -56,6 +56,7 @@ all.exons <- new('ExomeDepth',
                  formula = 'cbind(test, reference) ~ 1')
 
 ## ----call.CNVs----------------------------------------------------------------
+print(head(ExomeCount.dafr))
 all.exons <- CallCNVs(x = all.exons, 
                       transition.probability = 10^-4, 
                       chromosome = ExomeCount.dafr$chromosome, 

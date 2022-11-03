@@ -3,6 +3,9 @@
 \name{get_loglike_matrix}
 \alias{get_loglike_matrix}
 \title{get_loglike_matrix}
+\value{
+A likelihood matrix with the states as rows and the exons as columns
+}
 \description{
 Computes the loglikelihood matrix for the three states and each exon
 }

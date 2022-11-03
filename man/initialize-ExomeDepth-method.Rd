@@ -13,6 +13,7 @@
   phi.bins = 1,
   prop.tumor = 1,
   subset.for.speed = NULL,
+  positions = GenomicRanges::GRanges(),
   verbose = TRUE
 )
 }
@@ -35,8 +36,27 @@ Do not modify this parameter for the standard use of ExomeDepth.}
 
 \item{subset.for.speed}{Numeric, defaults to NULL. If non-null, this sets the number of data points to be used for an accelerated fit of the data.}
 
+\item{positions}{Optional GRanges argument specifying the positions of the exons (or DNA regions) where the reads were counted for test and reference.}
+
 \item{verbose}{Logical, controls the output level.}
+}
+\value{
+An ExomeDepth object, which contains the CNV calls after running a Viterbi algorithm.
 }
 \description{
 Builds an exomeDepth object from test and reference vectors
+}
+\examples{
+
+data(ExomeCount)  #pick an example count file
+small_count <- ExomeCount[1:100, ]  #reduce the size for speedy computations
+
+## remove exons without data below
+small_count <- small_count[ small_count$Exome2 + small_count$Exome3 > 0, ]
+
+example_object <- new('ExomeDepth', test = small_count$Exome2,
+                                    reference = small_count$Exome3,
+                                    formula = 'cbind(test, reference) ~ 1')
+print(example_object)
+print( mean(example_object@expected)) ## proportion of reads expected to match the test set
 }

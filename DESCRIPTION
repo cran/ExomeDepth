@@ -1,8 +1,8 @@
 Package: ExomeDepth
 Type: Package
 Title: Calls Copy Number Variants from Targeted Sequence Data
-Version: 1.1.15
-Date: 2019-12-23
+Version: 1.1.16
+Date: 2022-10-14
 Encoding: UTF-8
 Depends: R (>= 3.4.0)
 Imports: Biostrings, IRanges, Rsamtools, GenomicRanges (>= 1.23.0),
@@ -10,13 +10,21 @@ Imports: Biostrings, IRanges, Rsamtools, GenomicRanges (>= 1.23.0),
         magrittr
 Suggests: knitr
 VignetteBuilder: knitr
-Authors@R: c(person("Vincent", "Plagnol", role = c("aut", "cre"), email = "v.plagnol@ucl.ac.uk"))
-Maintainer: Vincent Plagnol  <v.plagnol@ucl.ac.uk>
-Description: Calls copy number variants (CNVs) from targeted sequence data, typically exome sequencing experiments designed to identify the genetic basis of Mendelian disorders.
+Authors@R: c(person("Vincent", "Plagnol", role = c("aut", "cre"), email = "vincent.plagnol@gmail.com"),
+            person("Gerard", "Jungman", role = "ctb", comment = "Author of included GSL fragments"),
+	    person("Brian", "Gough", role = "ctb", comment = "Author of included GSL fragments"),
+   	    person(c("Jorma", "O"), "Tahtinen", role = "ctb", comment = "Author of included GSL fragments"),
+      	    person("Gert", "Van den Eynde", role = "ctb", comment = "Author of included GSL fragments"))
+Description: Calls copy number variants (CNVs) from targeted sequence data, typically exome sequencing experiments designed to identify the genetic basis of Mendelian disorders. The method is presented in details in Plagnol et al (2012) <https://pubmed.ncbi.nlm.nih.gov/22942019/>.
 License: GPL-3
-RoxygenNote: 7.0.2
+RoxygenNote: 7.2.0
 NeedsCompilation: yes
-Packaged: 2019-12-31 20:58:43 UTC; vincent
-Author: Vincent Plagnol [aut, cre]
+Packaged: 2022-11-02 20:45:41 UTC; vincent
+Author: Vincent Plagnol [aut, cre],
+  Gerard Jungman [ctb] (Author of included GSL fragments),
+  Brian Gough [ctb] (Author of included GSL fragments),
+  Jorma O Tahtinen [ctb] (Author of included GSL fragments),
+  Gert Van den Eynde [ctb] (Author of included GSL fragments)
+Maintainer: Vincent Plagnol <vincent.plagnol@gmail.com>
 Repository: CRAN
-Date/Publication: 2020-01-09 00:50:02 UTC
+Date/Publication: 2022-11-03 16:00:05 UTC

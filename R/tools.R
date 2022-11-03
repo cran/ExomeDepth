@@ -13,6 +13,10 @@
 #' @return A real number corresponding to the quantile p.
 #' @author Vincent Plagnol
 #' @seealso VGAM R package.
+#' @examples
+#' qbetabinom(p = 0.2, size = 50, phi = 0.4, prob = 0.3)
+#' qbetabinom(p = 0.2, size = 50, phi = 0.1, prob = 0.8)
+
 
 qbetabinom <- function(p, size, phi, prob) {  ##parameterize with phi, prob instead of a,b
   a <- prob*(1-phi)/phi
@@ -33,6 +37,7 @@ qbetabinom <- function(p, size, phi, prob) {  ##parameterize with phi, prob inst
 #' @param shape2 Second parameter of the beta distribution for p.
 #' @return A quantile of the distribution.
 #' @seealso \code{VGAM} package.
+#' @examples qbetabinom.ab(p = 0.5, size = 50, shape1 = 0.2, shape2 = 0.25)
 
 qbetabinom.ab <- function (p, size, shape1, shape2)  {
   my.p <- VGAM::dbetabinom.ab(x = 0:size, , size = size, shape1 = shape1, shape2 = shape2)
@@ -52,6 +57,8 @@ qbetabinom.ab <- function (p, size, shape1, shape2)  {
 #'
 #' Estimates the most likely path for a hidden Markov Chain using the maximum
 #' likelihood Viterbi algorithm.
+#' The code assumes 3 states (normal, deletion and duplication). It is also setup for the
+#' first and last exons to be at position 0 (i.e. normal).
 #'
 #' Standard forward-backward Viterbi algorithm using a precomputed matrix of
 #' likelihoods.
@@ -60,16 +67,28 @@ qbetabinom.ab <- function (p, size, shape1, shape2)  {
 #' @param loglikelihood numeric matrix containing the loglikelihood of the data
 #' under the possible states
 #' @param positions Positions of the exons
-#' @param expected.CNV.length Expected length of CNV calls, which has an impact
-#' on the transition matrix between CNV states.
-#' @return \item{comp1 }{Description of 'comp1'} \item{comp2 }{Description of
-#' 'comp2'}
+#' @param expected.CNV.length Expected length of CNV calls, which impacts
+#' the transition matrix between CNV states.
+#' @return A list with the two slots `Viterbi.path` and `calls`.
+#' @examples
+#' transitions <- matrix(data = 1/3, ncol = 3, nrow = 3)
+#' loglikelihood <- matrix(c(rep(c(0, -10, -10), 3),
+#'                           rep(c(-10, -10, 0), 3),
+#'                           rep(c(-10, 0, -10), 4)), nrow = 3)
+#' ## note the final 0 state, enforced by the code
+#' viterbi.hmm(transitions, t(loglikelihood), positions = 1:10, expected.CNV.length = 1)
+#'
+#' ## Now we cannot transition out of 0 and should have no call
+#' transitions <- matrix(c(1, 0, 0, 0, 1, 0, 0, 0, 1), ncol = 3)
+#'
+#' ## we can check that no call is made
+#' viterbi.hmm(transitions, t(loglikelihood), positions = 1:10, expected.CNV.length = 1)
 
 
 viterbi.hmm <- function(transitions, loglikelihood, positions, expected.CNV.length) {
   if ( nrow(transitions) != ncol(transitions) ) stop("Transition matrix is not square")
   if ( length(positions) != nrow(loglikelihood) ) {
-    stop("The number of positions are not matching the number of rows of the likelihood matrix", length(positions), " and ", nrow(loglikelihood))
+    stop("The number of positions are not matching the number of rows of the likelihood matrix ", length(positions), " and ", nrow(loglikelihood))
   }
 
   nstates <- nrow(transitions)
@@ -101,6 +120,9 @@ viterbi.hmm <- function(transitions, loglikelihood, positions, expected.CNV.leng
 #' @param limit \code{logical}, should another large sample size limit be used?
 #' Defaults to FALSE.
 #' @return An expected Bayes factor.
+#' @examples
+#' get.power.betabinom(size = 200, my.phi = 0.1, my.p = 0.2, my.alt.p = 0.6)
+#' get.power.betabinom(size = 200, my.phi = 0.1, my.p = 0.2, my.alt.p = 0.2)
 
 
 get.power.betabinom <- function (size, my.phi, my.p, my.alt.p, theory = FALSE, frequentist = FALSE, limit = FALSE) {
@@ -121,8 +143,6 @@ get.power.betabinom <- function (size, my.phi, my.p, my.alt.p, theory = FALSE, f
 
 
   if (!theory) {  ##betabinomial case
-
-
 
     if (limit) { ##### beta approx
 

@@ -35,3 +35,17 @@ defined by a GenomicRanges object.
 \details{
 Largely derived from its equivalent function in the exomeCopy package.
 }
+\examples{
+
+minimum_bam_file <- system.file('extdata/minimum_1_25630000_25650000.bam',
+                                package = 'ExomeDepth')
+
+data(exons.hg19)
+exons.hg19.RHD <- subset(exons.hg19, grepl(pattern = '^RHD', exons.hg19[['name']]))
+my_range <- GenomicRanges::GRanges(paste0(exons.hg19.RHD$chromosome, ":",
+                       exons.hg19.RHD$start, '-', exons.hg19.RHD$end))
+
+print(countBamInGRanges.exomeDepth(bam.file = minimum_bam_file,
+                            granges = my_range))
+
+}

@@ -13,7 +13,14 @@ A class to hold the read count data that is used by ExomeDepth to call CNVs.
 only used if the \code{formula} argument refers to covariates (in which case
 these covariates must be included in the data frame).  \code{test} and
 \code{reference} refer to the read count data for the test and reference
-samples.  Creating a ExomeDepth object will automatically fit the
+samples.
+
+Critically, it is not required to store the positions of the DNA fragments
+that led to the test and reference counts. That is only required for the
+function \code{TestCNV}. If this is of use, a GRanges object can be provided
+using the argument \code{positions}.
+
+Creating a ExomeDepth object will automatically fit the
 beta-binomial model (using routines from the \code{aod} package) and compute
 the likelihood for the three copy number states (normal, deletion and
 duplication).

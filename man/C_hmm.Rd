@@ -3,6 +3,9 @@
 \name{C_hmm}
 \alias{C_hmm}
 \title{C_hmm}
+\value{
+A list with two objects: the first contains the optimum Viterbi path and the second the actual CNV calls
+}
 \description{
-Implements the hidden Markov Model using a C routine
+Implements the hidden Markov model (Viterbi algorithm) using a C routine
 }

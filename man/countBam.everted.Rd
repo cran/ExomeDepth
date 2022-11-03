@@ -29,6 +29,17 @@ Most users will not use this function, and it will only be called by the
 higher level count.everted.reads. Nevertheless it may be useful on its own
 in some cases.
 }
+\examples{
+
+data(genes.hg19)
+bam_file <- system.file('extdata/minimum_1_25630000_25650000.bam',
+                        package = 'ExomeDepth')
+genes.hg19.small <- subset(genes.hg19, grepl(pattern = '^TTC34|^RHD', genes.hg19[['name']]))
+my_range <- GenomicRanges::GRanges(paste0(genes.hg19.small$chromosome, ":",
+                       genes.hg19.small$start, '-', genes.hg19.small$end))
+print(my_range)
+print(countBam.everted (granges = my_range, bam.file = bam_file, min.mapq = 0))
+}
 \seealso{
 count.everted.reads
 }

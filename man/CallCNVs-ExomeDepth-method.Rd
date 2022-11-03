@@ -45,9 +45,26 @@ CNVcalls containing a data frame with the output of the calling.
 Call CNV data from an ExomeDepth object.
 }
 \details{
-The function must be called on an ExomeDepth object.
+Must be called on an ExomeDepth object and fits a hidden Markov model to the read depth data with three hidden states (normal, deletion, duplication).
 Likelihood data must have been pre-computed which should have been done by default when the ExomeDepth object was created.
+}
+\examples{
 
-This function fits a hidden Markov model to the read depth data with three
-hidden states (normal, deletion, duplication).
+data(ExomeCount)
+ExomeCount <- ExomeCount[1:500,] ## small for the purpose of this test
+ref_counts <- ExomeCount$Exome2 + ExomeCount$Exome3 + ExomeCount$Exome4
+
+## creates a simple ExomeDepth object
+test_object <- new('ExomeDepth', test = ExomeCount$Exome1, reference = ref_counts)
+
+## Call CNVs
+called_object <- CallCNVs(x = test_object, transition.probability = 10^-4,
+                         chromosome = GenomicRanges::seqnames(ExomeCount),
+                         start = GenomicRanges::start(ExomeCount),
+                         end = GenomicRanges::end(ExomeCount),
+                         name = ExomeCount$names)
+
+
+print(called_object@CNV.calls)
+
 }

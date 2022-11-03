@@ -4,7 +4,8 @@
 \name{ExomeCount}
 \alias{ExomeCount}
 \title{Example dataset for ExomeDepth}
-\format{A data frame with 25592 observations on the following 9 variables:
+\format{
+A data frame with 25592 observations on the following 9 variables:
 \itemize{
 \item chromosome, Character vector with chromosome names (only chromosome 1 in that case)
 \item start, start of exons
@@ -15,7 +16,8 @@
 \item camfid.034pc_sorted_unique.bam
 \item camfid.035if_sorted_unique.bam
 \item GC, a numeric vector with the GC content
-}}
+}
+}
 \source{
 Dataset generated in collaboration with Sergey Nejentsev, University of Cambridge.
 }

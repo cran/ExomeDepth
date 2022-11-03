@@ -59,18 +59,18 @@ each single BAM file.
 }
 \examples{
 
-\dontrun{  test <- count.everted.reads (bed.frame = genes.hg19,
-  bed.file = NULL,
-  bam.files = bam.files,
-  min.mapq = 20,
-  include.chr = FALSE)
-}
+data(genes.hg19)
+bam_file <- system.file('extdata/minimum_1_25630000_25650000.bam',
+                        package = 'ExomeDepth')
+genes.hg19.TTC <- subset(genes.hg19, grepl(pattern = '^TTC34', genes.hg19[['name']]))
+print(count.everted.reads (bed.frame = genes.hg19.TTC, bam.files = bam_file, min.mapq = 0))
+print(count.everted.reads (bed.frame = genes.hg19.TTC, bam.files = bam_file, min.mapq = 35))
 
 }
 \references{
-Computational methods for discovering structural variation with
-next-generation sequencing, Medvedev P, Stanciu M, Brudno M., Nature Methods
-2009
+Medvedev et al (2009) <https://doi.org/10.1038/nmeth.1374>
+"Computational methods for discovering structural variation with
+next-generation sequencing"
 }
 \seealso{
 getBAMCounts

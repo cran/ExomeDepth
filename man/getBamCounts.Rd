@@ -59,13 +59,13 @@ package.
 }
 \examples{
 
-\dontrun{
-load(exons.hg19)
-
-my.counts <- getBamCounts(bed.frame = exonpos,
-                          bam.files = my.bam,
-                          referenceFasta = 'human_g1k_v37.fasta')
-}
+data(exons.hg19)
+exons.hg19.RHD <- subset(exons.hg19, grepl(pattern = '^RHD', exons.hg19[['name']]))
+minimum_bam_file <- system.file('extdata/minimum_1_25630000_25650000.bam',
+                                package = 'ExomeDepth')
+my_counts <- getBamCounts(bed.frame = exons.hg19.RHD,
+                          bam.files = minimum_bam_file)
+print(my_counts)
 
 }
 \references{

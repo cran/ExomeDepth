@@ -26,6 +26,10 @@ parameterisation.
 \details{
 Filling a gap in the VGAM package.
 }
+\examples{
+qbetabinom(p = 0.2, size = 50, phi = 0.4, prob = 0.3)
+qbetabinom(p = 0.2, size = 50, phi = 0.1, prob = 0.8)
+}
 \seealso{
 VGAM R package.
 }

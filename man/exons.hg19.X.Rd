@@ -4,13 +4,15 @@
 \name{exons.hg19.X}
 \alias{exons.hg19.X}
 \title{Positions of exons on build hg19 of the human genome and on chromosome X}
-\format{A data frame of exons with the following 4 variables:
+\format{
+A data frame of exons with the following 4 variables:
 \itemize{
 \item chromosome, a factor with levels \code{X}, \code{Y}.
 \item start Numeric.
 \item end Numeric.
 \item name Character names for the exons.
-}}
+}
+}
 \source{
 Ensemble database version 71.
 }

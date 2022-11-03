@@ -18,6 +18,28 @@
 
 \item{type}{Character, must be either \code{deletion} or \code{duplication}.}
 }
+\value{
+A single numeric value that is the log likelihood ratio in favour of a call present at this location.
+}
 \description{
 Computes the Bayes Factor in favour of a CNV defined by position and type.
+}
+\examples{
+data(ExomeCount)
+ExomeCount <- ExomeCount[1:500,] ## small for the purpose of this test
+ref_counts <- ExomeCount$Exome2 + ExomeCount$Exome3 + ExomeCount$Exome4
+
+## creates a simple ExomeDepth object
+## Note that I include the positions here (GRanges format)
+## This is necessary for TestCNV to work
+test_object <- new('ExomeDepth', test = ExomeCount$Exome1,
+                                 reference = ref_counts,
+                                 positions = ExomeCount)
+
+## A positive control first
+TestCNV (test_object, chromosome = 'chr1', start = 1387428, end = 1405539, type = 'deletion')
+
+## And a region without evidence of call
+TestCNV (test_object, chromosome = 'chr1', start = 987428, end = 1005539, type = 'deletion')
+
 }
